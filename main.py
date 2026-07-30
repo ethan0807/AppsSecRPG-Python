@@ -807,7 +807,7 @@ def create_enemy_sprites() -> Dict[str, pygame.Surface]:
             pygame.draw.rect(surf, dark, (8, 12, 32, 24), 2, border_radius=3)
             # Server lights
             for i in range(3):
-                pygame.draw.circle(surf, GREEN, (16, 20 + i * 6), 2)
+                pygame.draw.circle(surf, CYAN, (16, 20 + i * 6), 2)
                 pygame.draw.circle(surf, RED, (38, 20 + i * 6), 2)
             # Outward arrow
             pygame.draw.polygon(surf, YELLOW, [(40, 18), (48, 24), (40, 30)])
