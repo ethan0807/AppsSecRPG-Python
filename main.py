@@ -2013,7 +2013,7 @@ class Game:
     
     def update_combat(self, dt: float):
         if self.combat.waiting_for_answer:
-            self.combat.timer -= dt
+            self.combat.timer -= dt / 1000.0
             if self.combat.timer <= 0:
                 # Time up = wrong answer
                 self.combat.selected = -1  # Force wrong
