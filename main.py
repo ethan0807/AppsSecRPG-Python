@@ -1923,6 +1923,9 @@ class Game:
         self.combat.question_asked = True
         self.state = GameState.COMBAT
         self.renderer.shake(3, 10)
+        # Clear interaction keys to prevent immediate answer submission
+        self.keys_pressed.discard(pygame.K_SPACE)
+        self.keys_pressed.discard(pygame.K_RETURN)
     
     def submit_answer(self):
         if not self.combat.waiting_for_answer:
