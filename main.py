@@ -500,11 +500,17 @@ class ParticleSystem:
     
     def draw(self, surface: pygame.Surface, camera_x: float, camera_y: float):
         for p in self.particles:
-            alpha = int(255 * (p.life / p.max_life))
+            # Clamp life ratio to valid range
+            life_ratio = max(0.0, min(1.0, p.life / p.max_life))
+            alpha = int(255 * life_ratio)
             if p.type == 'text':
                 # Damage numbers drawn separately
                 continue
-            color = (*p.color[:3], alpha)
+            # Ensure color components are valid integers 0-255
+            r = max(0, min(255, int(p.color[0])))
+            g = max(0, min(255, int(p.color[1])))
+            b = max(0, min(255, int(p.color[2])))
+            color = (r, g, b, alpha)
             px = int(p.x - camera_x)
             py = int(p.y - camera_y)
             if 0 <= px < SCREEN_WIDTH and 0 <= py < SCREEN_HEIGHT:
