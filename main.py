@@ -1988,7 +1988,7 @@ class Game:
             # Darken overlay
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 120))
-            self.screen.blit(overlay, (0, 0))
+            self.renderer.screen.blit(overlay, (0, 0))
             # Combat UI
             self.renderer.draw_combat(self.combat, self.player)
         elif self.state == GameState.PAUSED:
@@ -1998,7 +1998,7 @@ class Game:
             self.renderer.draw_minimap(self.player, self.enemies)
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 120))
-            self.screen.blit(overlay, (0, 0))
+            self.renderer.screen.blit(overlay, (0, 0))
             self.renderer.draw_pause(self.pause_selection)
         elif self.state == GameState.DIALOGUE:
             self.renderer.draw_world(self.player, self.enemies, self.particles)
@@ -2007,7 +2007,7 @@ class Game:
             self.renderer.draw_particle_text(self.particles)
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 120))
-            self.screen.blit(overlay, (0, 0))
+            self.renderer.screen.blit(overlay, (0, 0))
             self.renderer.draw_dialogue(self.dialogue_text, self.dialogue_speaker, 
                                        self.dialogue_typing, self.dialogue_progress)
         elif self.state == GameState.VICTORY:
