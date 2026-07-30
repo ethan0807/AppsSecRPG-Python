@@ -10,6 +10,7 @@ import sys
 import os
 import math
 import random
+import array
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
@@ -26,8 +27,82 @@ def shuffle_choices(question: Dict) -> Tuple[List[str], int]:
     return shuffled_choices, new_answer_idx
 
 
+def generate_8bit_tone(frequency: float, duration: float, sample_rate: int = 44100, wave_type: str = 'square') -> pygame.mixer.Sound:
+    """Generate an 8-bit style tone programmatically."""
+    n_samples = int(sample_rate * duration)
+    buf = array.array('h', [0] * n_samples)
+    amplitude = 16384  # 16-bit signed max is 32767
+    
+    for i in range(n_samples):
+        t = i / sample_rate
+        if wave_type == 'square':
+            value = amplitude if (t * frequency) % 1.0 < 0.5 else -amplitude
+        elif wave_type == 'triangle':
+            value = int(amplitude * 2 * abs(2 * (t * frequency - math.floor(t * frequency + 0.5))) - amplitude)
+        else:  # sawtooth
+            value = int(amplitude * 2 * (t * frequency - math.floor(t * frequency + 0.5)))
+        # Apply envelope
+        envelope = min(1.0, t * 10) * min(1.0, (duration - t) * 5)
+        buf[i] = int(value * envelope)
+    
+    sound = pygame.mixer.Sound(buffer=buf)
+    return sound
+
+
+def generate_background_music() -> pygame.mixer.Sound:
+    """Generate a simple 8-bit background music loop."""
+    sample_rate = 44100
+    # Simple melody: notes in Hz (C major scale mostly)
+    melody = [
+        (523.25, 0.3),  # C5
+        (659.25, 0.3),  # E5
+        (783.99, 0.3),  # G5
+        (1046.50, 0.3), # C6
+        (783.99, 0.3),  # G5
+        (659.25, 0.3),  # E5
+        (523.25, 0.6),  # C5
+        (0, 0.3),       # Rest
+        (493.88, 0.3),  # B4
+        (659.25, 0.3),  # E5
+        (739.99, 0.3),  # F#5
+        (987.77, 0.3),  # B5
+        (739.99, 0.3),  # F#5
+        (659.25, 0.3),  # E5
+        (493.88, 0.6),  # B4
+        (0, 0.3),       # Rest
+    ]
+    
+    total_duration = sum(d for _, d in melody)
+    n_samples = int(sample_rate * total_duration)
+    buf = array.array('h', [0] * n_samples)
+    amplitude = 8192  # Lower amplitude for background
+    
+    pos = 0
+    for freq, dur in melody:
+        note_samples = int(sample_rate * dur)
+        for i in range(note_samples):
+            if pos >= n_samples:
+                break
+            t = i / sample_rate
+            if freq > 0:
+                # Square wave with slight harmonic
+                value = amplitude if (t * freq) % 1.0 < 0.5 else -amplitude
+                # Add subtle second harmonic
+                value += int(amplitude * 0.3 * (1 if (t * freq * 2) % 1.0 < 0.5 else -1))
+            else:
+                value = 0
+            # Envelope
+            envelope = min(1.0, t * 15) * min(1.0, (dur - t) * 8)
+            buf[pos] = int(value * envelope)
+            pos += 1
+    
+    sound = pygame.mixer.Sound(buffer=buf)
+    return sound
+
+
 # =============================================================================
 pygame.font.init()
+pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
 # =============================================================================
 # CONSTANTS
@@ -1513,7 +1588,7 @@ class Renderer:
         cdx = (SCREEN_WIDTH - credits.get_width()) // 2
         self.screen.blit(credits, (cdx, 700))
     
-    def draw_pause(self, selected: int):
+    def draw_pause(self, selected: int, music_enabled: bool = True):
         # Semi-transparent overlay
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
@@ -1521,7 +1596,7 @@ class Renderer:
         
         # Pause box
         box_w = 400
-        box_h = 300
+        box_h = 350
         box_x = (SCREEN_WIDTH - box_w) // 2
         box_y = (SCREEN_HEIGHT - box_h) // 2
         
@@ -1535,7 +1610,8 @@ class Renderer:
         self.screen.blit(pause_text, (px, box_y + 30))
         
         # Menu options
-        options = ['RESUME', 'STATS', 'QUIT TO TITLE']
+        music_text = 'MUSIC: ON' if music_enabled else 'MUSIC: OFF'
+        options = ['RESUME', 'STATS', music_text, 'QUIT TO TITLE']
         for i, opt in enumerate(options):
             color = BRIGHT_AMBER if i == selected else UI_TEXT
             prefix = '► ' if i == selected else '  '
@@ -1662,6 +1738,10 @@ class Game:
         # Pause
         self.pause_selection = 0
         
+        # Music
+        self.music_enabled = True
+        self.bg_music = None
+        
         # Input
         self.keys_pressed = set()
         self.last_interact = pygame.time.get_ticks() - 500  # Allow immediate interaction
@@ -1691,6 +1771,23 @@ class Game:
         self.dialogue_progress = 0.0
         self.state = GameState.DIALOGUE
         self.dialogue_callback = lambda: setattr(self, 'state', GameState.OVERWORLD)
+        # Start background music
+        if self.music_enabled and self.bg_music is None:
+            self.bg_music = generate_background_music()
+            self.bg_music.play(-1)  # Loop indefinitely
+            self.bg_music.set_volume(0.3)
+    
+    def toggle_music(self):
+        """Toggle background music on/off."""
+        self.music_enabled = not self.music_enabled
+        if self.music_enabled:
+            if self.bg_music is None:
+                self.bg_music = generate_background_music()
+            self.bg_music.play(-1)
+            self.bg_music.set_volume(0.3)
+        else:
+            if self.bg_music:
+                self.bg_music.stop()
     
     def handle_events(self):
         for event in pygame.event.get():
@@ -1703,11 +1800,13 @@ class Game:
                 # Global keys
                 if event.key == pygame.K_ESCAPE:
                     if self.state == GameState.OVERWORLD:
+                        self.previous_state = GameState.OVERWORLD
                         self.state = GameState.PAUSED
                         self.pause_selection = 0
                     elif self.state == GameState.PAUSED:
                         self.state = GameState.OVERWORLD
                     elif self.state == GameState.COMBAT:
+                        self.previous_state = GameState.COMBAT
                         self.state = GameState.PAUSED
                         self.pause_selection = 0
                 
@@ -1749,9 +1848,9 @@ class Game:
                 
                 elif self.state == GameState.PAUSED:
                     if event.key == pygame.K_UP:
-                        self.pause_selection = (self.pause_selection - 1) % 3
+                        self.pause_selection = (self.pause_selection - 1) % 4
                     elif event.key == pygame.K_DOWN:
-                        self.pause_selection = (self.pause_selection + 1) % 3
+                        self.pause_selection = (self.pause_selection + 1) % 4
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         self.handle_pause_selection()
                 
@@ -1769,7 +1868,9 @@ class Game:
             self.state = self.previous_state if self.previous_state != GameState.PAUSED else GameState.OVERWORLD
         elif self.pause_selection == 1:  # STATS
             self.show_stats()
-        elif self.pause_selection == 2:  # QUIT
+        elif self.pause_selection == 2:  # MUSIC TOGGLE
+            self.toggle_music()
+        elif self.pause_selection == 3:  # QUIT
             self.state = GameState.TITLE
     
     def show_stats(self):
@@ -2102,7 +2203,7 @@ class Game:
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 120))
             self.renderer.screen.blit(overlay, (0, 0))
-            self.renderer.draw_pause(self.pause_selection)
+            self.renderer.draw_pause(self.pause_selection, self.music_enabled)
         elif self.state == GameState.DIALOGUE:
             self.renderer.draw_world(self.player, self.enemies, self.particles)
             self.renderer.draw_hud(self.player, self.enemies)
