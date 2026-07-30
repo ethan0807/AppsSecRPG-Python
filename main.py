@@ -2,7 +2,7 @@
 """
 AppSec RPG: Guardians of the Code
 OWASP Top 10 Quiz Combat Game
-Built with Pygame
+Built with Pygame - Retro Pixel Art Edition
 """
 
 import pygame
@@ -28,29 +28,34 @@ FPS = 60
 
 # Game
 TILE_SIZE = 32
-PLAYER_SPEED = 180  # pixels per second
+PLAYER_SPEED = 160  # pixels per second
 PLAYER_SIZE = 24
 ENEMY_SIZE = 24
 
-# Colors
+# Colors - Retro terminal green palette
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 BRIGHT_GREEN = (0, 255, 100)
 DARK_GREEN = (0, 100, 0)
+VERY_DARK_GREEN = (0, 40, 0)
 RED = (255, 0, 0)
+BRIGHT_RED = (255, 80, 80)
 YELLOW = (255, 255, 0)
+BRIGHT_YELLOW = (255, 255, 100)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
 ORANGE = (255, 165, 0)
 GRAY = (100, 100, 100)
 DARK_GRAY = (50, 50, 50)
-UI_BG = (10, 10, 20)
+UI_BG = (0, 20, 0)
 UI_BORDER = (0, 150, 0)
 UI_TEXT = (0, 200, 0)
 UI_TEXT_BRIGHT = (0, 255, 100)
 MENU_SELECTED = (0, 80, 0)
+MENU_SELECTED_BORDER = (0, 255, 100)
 HUD_BG = (0, 0, 0, 200)
+SCANLINE_ALPHA = 30
 
 # Game States
 class GameState(Enum):
@@ -64,29 +69,29 @@ class GameState(Enum):
 
 # World Map (0 = floor, 1 = wall)
 WORLD_MAP = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1],
-    [1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
-    [1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
-    [1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
-    [1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
-    [1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
-    [1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1],
+    [1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+    [1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+    [1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
+    [1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
+    [1,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
+    [1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ]
 
@@ -98,143 +103,142 @@ WORLD_HEIGHT = MAP_HEIGHT * TILE_SIZE
 # Player spawn (tile coordinates)
 PLAYER_SPAWN = (20, 18)
 
-# Game Balance
-PLAYER_BASE_HP = 100
-PLAYER_BASE_ATK = 15
-PLAYER_BASE_DEF = 10
-EXP_PER_LEVEL = 100
-ENEMY_HP_SCALING = 1.3
-ENEMY_ATK_SCALING = 1.2
-
-# HUD
-HUD_HEIGHT = 120
-
-# Enemy Types
+# Enemy types with pixel art symbols
 ENEMY_TYPES = {
     'INJECTION': {
         'name': 'Injection Demon',
-        'symbol': '◆',
+        'symbol': 'SQL',
+        'sprite_name': 'injection',
         'category': 'A03: Injection',
-        'desc': 'SQL/Command injection attacks',
-        'color': (255, 60, 60),
+        'desc': 'Executes malicious SQL commands',
+        'color': (200, 50, 50),
         'baseHp': 50,
         'baseAtk': 12,
-        'xpReward': 30,
+        'xpReward': 50,
     },
     'XSS': {
         'name': 'XSS Specter',
-        'symbol': '✦',
+        'symbol': '<X>',
+        'sprite_name': 'xss',
         'category': 'A03: Injection',
-        'desc': 'Cross-site scripting attacks',
-        'color': (255, 150, 0),
-        'baseHp': 40,
-        'baseAtk': 15,
-        'xpReward': 25,
+        'desc': 'Injects malicious scripts',
+        'color': (255, 140, 0),
+        'baseHp': 45,
+        'baseAtk': 14,
+        'xpReward': 50,
     },
     'CRYPTO': {
         'name': 'Crypto Phantom',
-        'symbol': '◈',
+        'symbol': '🔒',
+        'sprite_name': 'crypto',
         'category': 'A02: Cryptographic Failures',
-        'desc': 'Weak encryption, exposed secrets',
-        'color': (180, 0, 255),
-        'baseHp': 60,
+        'desc': 'Exposes sensitive data',
+        'color': (180, 0, 180),
+        'baseHp': 55,
         'baseAtk': 10,
-        'xpReward': 35,
+        'xpReward': 55,
     },
     'ACCESS': {
         'name': 'Access Control Wraith',
-        'symbol': '■',
+        'symbol': '🔑',
+        'sprite_name': 'access',
         'category': 'A01: Broken Access Control',
-        'desc': 'Unauthorized resource access',
-        'color': (0, 200, 255),
-        'baseHp': 55,
-        'baseAtk': 14,
-        'xpReward': 30,
+        'desc': 'Bypasses authorization checks',
+        'color': (0, 180, 180),
+        'baseHp': 60,
+        'baseAtk': 11,
+        'xpReward': 60,
     },
     'DESIGN': {
         'name': 'Insecure Design Golem',
-        'symbol': '▲',
+        'symbol': '⚙',
+        'sprite_name': 'design',
         'category': 'A04: Insecure Design',
         'desc': 'Missing security controls',
-        'color': (255, 255, 0),
-        'baseHp': 70,
-        'baseAtk': 8,
-        'xpReward': 40,
+        'color': (120, 120, 0),
+        'baseHp': 65,
+        'baseAtk': 13,
+        'xpReward': 65,
     },
-    'MISCONFIG': {
+    'CONFIG': {
         'name': 'Config Goblin',
-        'symbol': '●',
+        'symbol': '⚙',
+        'sprite_name': 'config',
         'category': 'A05: Security Misconfiguration',
         'desc': 'Default creds, open ports',
-        'color': (255, 100, 100),
-        'baseHp': 35,
-        'baseAtk': 18,
-        'xpReward': 20,
+        'color': (160, 80, 0),
+        'baseHp': 40,
+        'baseAtk': 15,
+        'xpReward': 45,
     },
     'DESERIALIZE': {
         'name': 'Deserialization Wraith',
-        'symbol': '◆',
+        'symbol': '📦',
+        'sprite_name': 'deserialize',
         'category': 'A08: Software Integrity Failures',
         'desc': 'Untrusted data deserialization',
-        'color': (150, 0, 200),
-        'baseHp': 65,
-        'baseAtk': 11,
-        'xpReward': 35,
+        'color': (100, 0, 150),
+        'baseHp': 70,
+        'baseAtk': 12,
+        'xpReward': 70,
     },
     'LOGGING': {
         'name': 'Logging Phantom',
-        'symbol': '◆',
+        'symbol': '📝',
+        'sprite_name': 'logging',
         'category': 'A09: Logging Failures',
         'desc': 'Insufficient attack detection',
-        'color': (100, 100, 255),
-        'baseHp': 45,
-        'baseAtk': 13,
-        'xpReward': 25,
+        'color': (80, 80, 80),
+        'baseHp': 50,
+        'baseAtk': 10,
+        'xpReward': 50,
     },
 }
 
-# Enemy spawns (tile coordinates) - all on floor tiles
 ENEMY_SPAWNS = [
     {'x': 5, 'y': 5, 'type': 'INJECTION'},
-    {'x': 30, 'y': 5, 'type': 'XSS'},
-    {'x': 5, 'y': 12, 'type': 'CRYPTO'},
-    {'x': 30, 'y': 15, 'type': 'ACCESS'},
-    {'x': 20, 'y': 10, 'type': 'DESIGN'},
-    {'x': 10, 'y': 8, 'type': 'MISCONFIG'},
-    {'x': 30, 'y': 12, 'type': 'DESERIALIZE'},
-    {'x': 20, 'y': 5, 'type': 'LOGGING'},
+    {'x': 45, 'y': 5, 'type': 'XSS'},
+    {'x': 6, 'y': 18, 'type': 'CRYPTO'},
+    {'x': 45, 'y': 18, 'type': 'ACCESS'},
+    {'x': 10, 'y': 10, 'type': 'DESIGN'},
+    {'x': 40, 'y': 10, 'type': 'CONFIG'},
+    {'x': 10, 'y': 14, 'type': 'DESERIALIZE'},
+    {'x': 40, 'y': 14, 'type': 'LOGGING'},
 ]
 
-# OWASP Top 10 Questions
+ENEMY_HP_SCALING = 1.3
+ENEMY_ATK_SCALING = 1.2
+
+# OWASP Top 10 Questions (23 questions across 10 categories)
 QUESTIONS = {
     'A01: Broken Access Control': [
         {
             'question': 'What is Broken Access Control?',
             'choices': [
-                'Users can access resources they should not be authorized to access',
-                'Encryption keys are hardcoded in source code',
-                'SQL queries are constructed via string concatenation',
-                'Error messages reveal stack traces to users'
+                'Users can access resources they should not',
+                'Weak encryption algorithms',
+                'SQL injection vulnerabilities',
+                'Missing security logging'
             ],
             'answer': 0
         },
         {
             'question': 'Which is an example of Insecure Direct Object Reference (IDOR)?',
             'choices': [
-                'Changing /api/user/123/profile to /api/user/124/profile to view another user\'s data',
-                'Injecting <script>alert(1)</script> into a comment field',
-                'Using a weak password like "password123"',
-                'Leaving debug endpoints enabled in production'
+                'Changing /user/123 to /user/124 to access another user data',
+                'Injecting SQL via input fields',
+                'Using default admin credentials',
+                'Not logging failed login attempts'
             ],
             'answer': 0
         },
         {
-            'question': 'What is the principle of least privilege?',
+            'question': 'How to prevent Broken Access Control?',
             'choices': [
-                'Users should have only the minimum permissions necessary',
-                'All users should have admin access for convenience',
-                'Permissions should be granted based on seniority',
-                'Developers should have production database access'
+                'Implement proper authorization checks on every request',
+                'Use stronger encryption',
+                'Sanitize all inputs',
+                'Enable debug logging'
             ],
             'answer': 0
         }
@@ -243,30 +247,30 @@ QUESTIONS = {
         {
             'question': 'What is a Cryptographic Failure?',
             'choices': [
-                'Sensitive data transmitted in cleartext or using weak algorithms',
-                'User input not validated before database queries',
-                'Missing authentication on admin endpoints',
-                'Error messages revealing system information'
+                'Sensitive data exposed due to weak/no encryption',
+                'Broken authentication logic',
+                'Cross-site scripting attacks',
+                'Insecure deserialization'
             ],
             'answer': 0
         },
         {
-            'question': 'Which should NEVER be used for password storage?',
+            'question': 'Which is a secure password hashing algorithm?',
             'choices': [
-                'MD5 or SHA1 (fast hashes without salt)',
-                'bcrypt with cost factor 12',
-                'Argon2id with proper parameters',
-                'PBKDF2 with 100,000+ iterations'
+                'bcrypt or Argon2',
+                'MD5',
+                'SHA-1',
+                'Base64 encoding'
             ],
             'answer': 0
         },
         {
-            'question': 'What is the risk of hardcoding API keys in source code?',
+            'question': 'What should NEVER be transmitted in plaintext?',
             'choices': [
-                'Keys can be exposed via version control or decompilation',
-                'It makes the application run slower',
-                'It prevents the use of environment variables',
-                'It violates coding style guides'
+                'Passwords and session tokens',
+                'Public API documentation',
+                'HTML content',
+                'CSS stylesheets'
             ],
             'answer': 0
         }
@@ -275,30 +279,30 @@ QUESTIONS = {
         {
             'question': 'What is SQL Injection?',
             'choices': [
-                'User input concatenated directly into SQL queries allowing arbitrary execution',
-                'Malicious scripts injected into web pages viewed by other users',
-                'Attackers uploading malicious files to the server',
-                'Brute forcing passwords via login forms'
+                'Inserting malicious SQL via user input',
+                'Injecting JavaScript into web pages',
+                'Uploading malicious files',
+                'Brute forcing passwords'
             ],
             'answer': 0
         },
         {
-            'question': 'How do you prevent SQL Injection?',
+            'question': 'Best defense against SQL Injection?',
             'choices': [
-                'Use parameterized queries / prepared statements',
-                'Escape special characters with string replacement',
-                'Validate input with regex only',
-                'Use stored procedures for all queries'
+                'Parameterized queries / prepared statements',
+                'Escaping special characters',
+                'Input validation only',
+                'Using stored procedures only'
             ],
             'answer': 0
         },
         {
             'question': 'What is Cross-Site Scripting (XSS)?',
             'choices': [
-                'Injecting malicious scripts into web pages viewed by other users',
-                'Stealing session cookies via network sniffing',
-                'Injecting SQL commands into database queries',
-                'Overloading server with requests'
+                'Injecting malicious scripts into trusted websites',
+                'Stealing database credentials',
+                'Bypassing authentication',
+                'Denial of service attacks'
             ],
             'answer': 0
         }
@@ -307,20 +311,20 @@ QUESTIONS = {
         {
             'question': 'What is Insecure Design?',
             'choices': [
-                'Missing or ineffective control design that cannot be fixed by implementation',
-                'Using outdated libraries with known vulnerabilities',
-                'Failing to encrypt sensitive data at rest',
-                'Not logging security events'
+                'Missing or ineffective security controls by design',
+                'Implementation bugs in secure code',
+                'Weak encryption algorithms',
+                'Unpatched software'
             ],
             'answer': 0
         },
         {
-            'question': 'Which is a secure design practice?',
+            'question': 'How to address Insecure Design?',
             'choices': [
-                'Threat modeling during design phase',
-                'Adding security testing only before release',
-                'Using security by obscurity',
-                'Trusting all internal network traffic'
+                'Threat modeling and secure design patterns',
+                'More penetration testing',
+                'Stronger firewalls',
+                'Better logging'
             ],
             'answer': 0
         }
@@ -329,20 +333,20 @@ QUESTIONS = {
         {
             'question': 'What is Security Misconfiguration?',
             'choices': [
-                'Default credentials, unnecessary features, open cloud storage, verbose errors',
-                'Weak password policies for user accounts',
-                'Missing input validation on forms',
-                'Not using HTTPS for all pages'
+                'Default configs, open ports, verbose errors',
+                'Weak password policies',
+                'SQL injection flaws',
+                'Missing encryption'
             ],
             'answer': 0
         },
         {
-            'question': 'Which is a common misconfiguration?',
+            'question': 'Which is a security misconfiguration?',
             'choices': [
-                'Leaving default admin/admin credentials on production systems',
-                'Using parameterized queries for database access',
-                'Implementing rate limiting on login endpoints',
-                'Encrypting data with AES-256'
+                'Directory listing enabled on web server',
+                'Using parameterized queries',
+                'Implementing rate limiting',
+                'Encrypting data at rest'
             ],
             'answer': 0
         }
@@ -351,86 +355,86 @@ QUESTIONS = {
         {
             'question': 'What are Vulnerable and Outdated Components?',
             'choices': [
-                'Using libraries/frameworks with known CVEs without patching',
-                'Writing custom code instead of using libraries',
-                'Not having a CI/CD pipeline',
-                'Using microservices architecture'
+                'Using libraries with known vulnerabilities',
+                'Custom code with bugs',
+                'Weak encryption',
+                'Missing access controls'
             ],
             'answer': 0
         },
         {
             'question': 'How to manage component vulnerabilities?',
             'choices': [
-                'Use SCA tools, monitor CVEs, automate dependency updates',
-                'Only use libraries written in-house',
-                'Never update dependencies to avoid breaking changes',
-                'Use only the most popular libraries'
+                'Software composition analysis (SCA) and regular updates',
+                'Only use custom code',
+                'Disable all third-party libraries',
+                'Use older stable versions'
             ],
             'answer': 0
         }
     ],
-    'A07: Auth Failures': [
+    'A07: Authentication Failures': [
         {
-            'question': 'What is Identification and Authentication Failure?',
+            'question': 'What is an Authentication Failure?',
             'choices': [
-                'Weak credential recovery, brute force, session fixation, weak passwords',
-                'SQL injection in login forms',
-                'XSS on registration pages',
-                'Missing CSRF tokens on forms'
+                'Weak authentication allowing credential stuffing/brute force',
+                'SQL injection in login form',
+                'XSS on login page',
+                'Missing HTTPS'
             ],
             'answer': 0
         },
         {
-            'question': 'Which is a secure password policy?',
+            'question': 'Best practice for authentication?',
             'choices': [
-                'Minimum 12 chars, MFA enabled, rate limiting, breach checking',
-                'Minimum 8 chars, no special chars required',
-                'Password rotation every 30 days',
-                'Allowing password hints'
+                'Multi-factor authentication (MFA) + rate limiting',
+                'Complex password requirements only',
+                'IP-based blocking only',
+                'CAPTCHA on every request'
             ],
             'answer': 0
         }
     ],
-    'A08: Software Integrity': [
+    'A08: Software Integrity Failures': [
         {
-            'question': 'What is a Software and Data Integrity Failure?',
+            'question': 'What is Insecure Deserialization?',
             'choices': [
-                'Unverified CI/CD pipelines, unsigned code, insecure deserialization',
-                'Weak encryption algorithms',
-                'Missing security headers',
-                'Open redirect vulnerabilities'
+                'Untrusted data deserialized without validation',
+                'Weak encryption of serialized data',
+                'SQL injection via serialized objects',
+                'XSS via JSON parsing'
             ],
             'answer': 0
         },
         {
-            'question': 'What prevents supply chain attacks?',
+            'question': 'How to prevent deserialization attacks?',
             'choices': [
-                'Signed commits, SBOM, verified dependencies, reproducible builds',
-                'Using only internal package mirrors',
-                'Disabling all third-party packages',
-                'Manual code review of all dependencies'
+                'Validate/verify serialized data, use safe formats (JSON)',
+                'Encrypt all serialized data',
+                'Disable serialization entirely',
+                'Use only binary formats'
             ],
             'answer': 0
         }
     ],
     'A09: Logging Failures': [
         {
-            'question': 'What is a Security Logging and Monitoring Failure?',
+            'question': 'What is a Logging Failure?',
             'choices': [
-                'Insufficient logging, no alerting, logs only stored locally',
-                'Logging too much information',
-                'Using structured logging formats',
-                'Centralized log aggregation'
+                'Insufficient logging to detect attacks',
+                'Logging too much data',
+                'Logs stored in plaintext',
+                'Logs not rotated'
             ],
             'answer': 0
         },
         {
-            'question': 'What should be logged for security?',
+            'question': 'What should security logs include?',
             'choices': [
-                'Failed logins, privilege changes, access violations, input validation failures',
+                'Failed logins, access denials, input validation failures',
                 'Only successful logins',
-                'All user keystrokes',
-                'Database query performance metrics'
+                'All HTTP requests',
+                'Database query logs only'
             ],
             'answer': 0
         }
@@ -439,20 +443,20 @@ QUESTIONS = {
         {
             'question': 'What is Server-Side Request Forgery (SSRF)?',
             'choices': [
-                'Server fetches attacker-controlled URLs, accessing internal resources',
-                'Client browser forced to make requests to attacker site',
-                'Database queries modified by user input',
-                'Session tokens stolen via XSS'
+                'Server fetches attacker-controlled URLs',
+                'Client-side request manipulation',
+                'Cross-site request forgery',
+                'SQL injection via HTTP headers'
             ],
             'answer': 0
         },
         {
             'question': 'How to prevent SSRF?',
             'choices': [
-                'Allowlist URLs, block private IPs, disable HTTP redirects, use fetch proxies',
-                'Use HTTPS for all external requests',
-                'Validate user input with regex',
-                'Rate limit all outbound requests'
+                'Validate/sanitize user-supplied URLs, allowlist destinations',
+                'Disable all outbound HTTP requests',
+                'Use HTTPS only',
+                'Implement CORS headers'
             ],
             'answer': 0
         }
@@ -467,35 +471,41 @@ QUESTIONS = {
 class Player:
     x: float
     y: float
-    vx: float = 0
-    vy: float = 0
     width: int = PLAYER_SIZE
     height: int = PLAYER_SIZE
-    speed: int = PLAYER_SPEED
-    max_hp: int = PLAYER_BASE_HP
-    hp: int = PLAYER_BASE_HP
-    base_atk: int = PLAYER_BASE_ATK
-    atk: int = PLAYER_BASE_ATK
-    base_def: int = PLAYER_BASE_DEF
-    def_: int = PLAYER_BASE_DEF
-    level: int = 1
-    exp: int = 0
-    exp_to_next: int = EXP_PER_LEVEL
-    accuracy: Dict[str, int] = field(default_factory=lambda: {'correct': 0, 'total': 0})
-    enemies_defeated: int = 0
-    questions_answered: int = 0
-    invulnerable: bool = False
-    invuln_timer: float = 0
-    knockback_x: float = 0
-    knockback_y: float = 0
-    knockback_timer: float = 0
-    anim_frame: int = 0
-    anim_timer: float = 0
+    speed: float = PLAYER_SPEED
+    vx: float = 0
+    vy: float = 0
     facing: str = 'down'
     moving: bool = False
+    anim_frame: int = 0
+    anim_timer: float = 0
+    
+    # Stats
+    max_hp: int = 100
+    hp: int = 100
+    atk: int = 15
+    def_: int = 10
+    level: int = 1
+    exp: int = 0
+    exp_to_next: int = 100
+    
+    # Combat stats
+    enemies_defeated: int = 0
+    questions_answered: int = 0
+    accuracy: Dict[str, int] = field(default_factory=lambda: {'correct': 0, 'total': 0})
+    
+    # Visual effects
     damage_flash: float = 0
     heal_flash: float = 0
+    invulnerable: bool = False
+    invuln_timer: float = 0
     screen_shake: float = 0
+    
+    @property
+    def rect(self) -> pygame.Rect:
+        half_w, half_h = self.width // 2, self.height // 2
+        return pygame.Rect(int(self.x - half_w), int(self.y - half_h), self.width, self.height)
 
 
 @dataclass
@@ -504,30 +514,35 @@ class Enemy:
     type: str
     name: str
     symbol: str
+    sprite_name: str
     category: str
     description: str
     color: Tuple[int, int, int]
     x: float
     y: float
+    spawn_tile: Tuple[int, int]
     width: int = ENEMY_SIZE
     height: int = ENEMY_SIZE
-    spawn_tile: Tuple[int, int] = field(default_factory=lambda: (0, 0))
     max_hp: int = 50
     hp: int = 50
     atk: int = 10
     level: int = 1
-    xp_reward: int = 20
+    xp_reward: int = 50
     alive: bool = True
     defeated: bool = False
     defeated_timer: float = 0
-    anim_frame: int = 0
-    anim_timer: float = 0
     float_offset: float = 0
     float_dir: int = 1
+    anim_frame: int = 0
+    anim_timer: float = 0
     damage_flash: float = 0
-    ai_timer: float = 0
-    ai_state: str = 'idle'
     wander_target: Tuple[float, float] = (0, 0)
+    ai_timer: float = 0
+    
+    @property
+    def rect(self) -> pygame.Rect:
+        half_w, half_h = self.width // 2, self.height // 2
+        return pygame.Rect(int(self.x - half_w), int(self.y - half_h), self.width, self.height)
 
 
 @dataclass
@@ -539,7 +554,7 @@ class Particle:
     color: Tuple[int, int, int]
     life: float
     max_life: float
-    size: int = 3
+    size: int
     gravity: float = 0
 
 
@@ -551,29 +566,23 @@ class CombatState:
     selected_answer: int = 0
     timer: float = 30.0
     max_timer: float = 30.0
+    turn: str = 'player'  # 'player' or 'enemy'
     result: Optional[str] = None  # 'correct', 'incorrect', 'timeout'
     result_timer: float = 0
     damage_dealt: int = 0
     damage_taken: int = 0
-    turn: str = 'player'  # 'player', 'enemy'
     typewriter_text: str = ''
     typewriter_index: int = 0
     typewriter_timer: float = 0
-    typewriter_speed: float = 30  # ms per char
+    typewriter_speed: float = 30  # ms per character
 
 
 # =============================================================================
 # UTILITY FUNCTIONS
 # =============================================================================
 
-def get_random_question(category: str) -> Dict:
-    """Get a random question from a category."""
-    questions = QUESTIONS.get(category, QUESTIONS['A01: Broken Access Control'])
-    return random.choice(questions)
-
-
-def check_collision(entity, world_map) -> bool:
-    """Check if entity collides with wall tiles."""
+def check_collision(entity: Any, world_map: List[List[int]]) -> bool:
+    """Check if entity collides with any wall tile."""
     half_w = entity.width / 2
     half_h = entity.height / 2
     
@@ -590,8 +599,8 @@ def check_collision(entity, world_map) -> bool:
     return False
 
 
-def resolve_collision(entity, world_map):
-    """Resolve collision with wall tiles."""
+def resolve_collision(entity: Any, world_map: List[List[int]]):
+    """Push entity out of walls."""
     half_w = entity.width / 2
     half_h = entity.height / 2
     
@@ -629,13 +638,36 @@ def resolve_collision(entity, world_map):
                             entity.y = tile_bottom + half_h + 0.1
 
 
-def check_entity_collision(e1, e2) -> bool:
+def check_entity_collision(e1: Any, e2: Any) -> bool:
     """Check collision between two entities."""
     half_w1, half_h1 = e1.width / 2, e1.height / 2
     half_w2, half_h2 = e2.width / 2, e2.height / 2
     
     return (abs(e1.x - e2.x) < half_w1 + half_w2 and
             abs(e1.y - e2.y) < half_h1 + half_h2)
+
+
+def resolve_entity_collision(e1: Any, e2: Any):
+    """Push e1 out of e2 (solid collision)."""
+    half_w1, half_h1 = e1.width / 2, e1.height / 2
+    half_w2, half_h2 = e2.width / 2, e2.height / 2
+    
+    dx = e1.x - e2.x
+    dy = e1.y - e2.y
+    
+    overlap_x = (half_w1 + half_w2) - abs(dx)
+    overlap_y = (half_h1 + half_h2) - abs(dy)
+    
+    if overlap_x < overlap_y:
+        if dx > 0:
+            e1.x = e2.x + half_w1 + half_w2 + 0.1
+        else:
+            e1.x = e2.x - half_w1 - half_w2 - 0.1
+    else:
+        if dy > 0:
+            e1.y = e2.y + half_h1 + half_h2 + 0.1
+        else:
+            e1.y = e2.y - half_h1 - half_h2 - 0.1
 
 
 def create_enemy(spawn_data: Dict, level: int = 1) -> Enemy:
@@ -649,6 +681,7 @@ def create_enemy(spawn_data: Dict, level: int = 1) -> Enemy:
         type=spawn_data['type'],
         name=type_data['name'],
         symbol=type_data['symbol'],
+        sprite_name=type_data['sprite_name'],
         category=type_data['category'],
         description=type_data['desc'],
         color=type_data['color'],
@@ -668,17 +701,240 @@ def create_all_enemies(level: int = 1) -> List[Enemy]:
     return [create_enemy(spawn, level) for spawn in ENEMY_SPAWNS]
 
 
+def get_random_question(category: str) -> Dict:
+    """Get a random question for a category."""
+    if category in QUESTIONS and QUESTIONS[category]:
+        return random.choice(QUESTIONS[category])
+    # Fallback
+    return random.choice(QUESTIONS['A03: Injection'])
+
+
+# =============================================================================
+# PIXEL ART SPRITE GENERATION
+# =============================================================================
+
+def create_player_sprites() -> Dict[str, List[pygame.Surface]]:
+    """Create retro pixel art sprites for player."""
+    sprites = {'down': [], 'up': [], 'left': [], 'right': []}
+    
+    # 4 frames per direction (idle + 3 walk frames)
+    for frame in range(4):
+        # DOWN facing
+        surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        # Body
+        pygame.draw.rect(surf, (0, 200, 0), (10, 10, 12, 16))
+        pygame.draw.rect(surf, (0, 150, 0), (10, 10, 12, 16), 1)
+        # Head
+        pygame.draw.rect(surf, (0, 220, 0), (11, 6, 10, 8))
+        pygame.draw.rect(surf, (0, 170, 0), (11, 6, 10, 8), 1)
+        # Eyes
+        pygame.draw.rect(surf, BLACK, (13, 8, 2, 2))
+        pygame.draw.rect(surf, BLACK, (17, 8, 2, 2))
+        # Legs animation
+        leg_offset = frame % 2 * 2
+        pygame.draw.rect(surf, (0, 180, 0), (11, 24, 4, 6))
+        pygame.draw.rect(surf, (0, 180, 0), (17, 24 + leg_offset, 4, 6))
+        sprites['down'].append(surf)
+        
+        # UP facing
+        surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        pygame.draw.rect(surf, (0, 200, 0), (10, 10, 12, 16))
+        pygame.draw.rect(surf, (0, 150, 0), (10, 10, 12, 16), 1)
+        pygame.draw.rect(surf, (0, 220, 0), (11, 6, 10, 8))
+        pygame.draw.rect(surf, (0, 170, 0), (11, 6, 10, 8), 1)
+        # Eyes (back of head - just dots)
+        pygame.draw.rect(surf, BLACK, (13, 8, 2, 2))
+        pygame.draw.rect(surf, BLACK, (17, 8, 2, 2))
+        leg_offset = frame % 2 * 2
+        pygame.draw.rect(surf, (0, 180, 0), (11, 24, 4, 6))
+        pygame.draw.rect(surf, (0, 180, 0), (17, 24 + leg_offset, 4, 6))
+        sprites['up'].append(surf)
+        
+        # LEFT facing
+        surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        pygame.draw.rect(surf, (0, 200, 0), (10, 10, 12, 16))
+        pygame.draw.rect(surf, (0, 150, 0), (10, 10, 12, 16), 1)
+        pygame.draw.rect(surf, (0, 220, 0), (6, 6, 10, 8))  # Head left
+        pygame.draw.rect(surf, (0, 170, 0), (6, 6, 10, 8), 1)
+        pygame.draw.rect(surf, BLACK, (8, 8, 2, 2))  # One eye visible
+        leg_offset = frame % 2 * 2
+        pygame.draw.rect(surf, (0, 180, 0), (11, 24, 4, 6))
+        pygame.draw.rect(surf, (0, 180, 0), (17, 24 + leg_offset, 4, 6))
+        sprites['left'].append(surf)
+        
+        # RIGHT facing
+        surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        pygame.draw.rect(surf, (0, 200, 0), (10, 10, 12, 16))
+        pygame.draw.rect(surf, (0, 150, 0), (10, 10, 12, 16), 1)
+        pygame.draw.rect(surf, (0, 220, 0), (16, 6, 10, 8))  # Head right
+        pygame.draw.rect(surf, (0, 170, 0), (16, 6, 10, 8), 1)
+        pygame.draw.rect(surf, BLACK, (22, 8, 2, 2))  # One eye visible
+        leg_offset = frame % 2 * 2
+        pygame.draw.rect(surf, (0, 180, 0), (11, 24, 4, 6))
+        pygame.draw.rect(surf, (0, 180, 0), (17, 24 + leg_offset, 4, 6))
+        sprites['right'].append(surf)
+    
+    return sprites
+
+
+def create_enemy_sprites() -> Dict[str, pygame.Surface]:
+    """Create retro pixel art sprites for each enemy type."""
+    sprites = {}
+    
+    for etype, data in ENEMY_TYPES.items():
+        surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        color = data['color']
+        dark_color = tuple(max(0, c - 60) for c in color)
+        bright_color = tuple(min(255, c + 60) for c in color)
+        
+        if etype == 'INJECTION':
+            # Red demon with horns
+            pygame.draw.ellipse(surf, color, (6, 8, 20, 20))
+            pygame.draw.ellipse(surf, dark_color, (6, 8, 20, 20), 2)
+            # Horns
+            pygame.draw.polygon(surf, dark_color, [(10, 10), (6, 2), (14, 10)])
+            pygame.draw.polygon(surf, dark_color, [(22, 10), (26, 2), (18, 10)])
+            # Eyes
+            pygame.draw.rect(surf, YELLOW, (12, 14, 3, 3))
+            pygame.draw.rect(surf, YELLOW, (17, 14, 3, 3))
+            # Mouth
+            pygame.draw.rect(surf, BLACK, (13, 20, 6, 2))
+            
+        elif etype == 'XSS':
+            # Orange ghost with < > symbols
+            pygame.draw.ellipse(surf, color, (4, 6, 24, 24))
+            pygame.draw.ellipse(surf, dark_color, (4, 6, 24, 24), 2)
+            # Wavy bottom
+            for i in range(5):
+                x = 6 + i * 4
+                pygame.draw.arc(surf, color, (x, 24, 8, 10), 0, math.pi)
+            # Eyes
+            pygame.draw.rect(surf, WHITE, (11, 14, 4, 4))
+            pygame.draw.rect(surf, WHITE, (17, 14, 4, 4))
+            pygame.draw.rect(surf, BLACK, (12, 15, 2, 2))
+            pygame.draw.rect(surf, BLACK, (18, 15, 2, 2))
+            # <X> symbol
+            font = pygame.font.Font(None, 16)
+            text = font.render('<X>', True, WHITE)
+            surf.blit(text, (10, 22))
+            
+        elif etype == 'CRYPTO':
+            # Purple lock
+            pygame.draw.rect(surf, dark_color, (9, 10, 14, 18), border_radius=2)
+            pygame.draw.rect(surf, color, (9, 10, 14, 18), 2, border_radius=2)
+            # Shackle
+            pygame.draw.arc(surf, color, (8, 4, 16, 16), 0, math.pi, 3)
+            # Keyhole
+            pygame.draw.circle(surf, BLACK, (16, 16), 3)
+            pygame.draw.rect(surf, BLACK, (15, 19, 2, 6))
+            
+        elif etype == 'ACCESS':
+            # Cyan key
+            pygame.draw.circle(surf, color, (10, 22), 6)
+            pygame.draw.circle(surf, dark_color, (10, 22), 6, 2)
+            pygame.draw.circle(surf, BLACK, (10, 22), 2)
+            # Key shaft
+            pygame.draw.rect(surf, color, (10, 16, 4, 10))
+            # Teeth
+            pygame.draw.rect(surf, color, (14, 18, 8, 3))
+            pygame.draw.rect(surf, color, (14, 14, 6, 3))
+            
+        elif etype == 'DESIGN':
+            # Yellow gear
+            center = (16, 16)
+            for i in range(8):
+                angle = i * math.pi / 4
+                x1 = center[0] + math.cos(angle) * 10
+                y1 = center[1] + math.sin(angle) * 10
+                x2 = center[0] + math.cos(angle) * 14
+                y2 = center[1] + math.sin(angle) * 14
+                pygame.draw.line(surf, color, (x1, y1), (x2, y2), 3)
+            pygame.draw.circle(surf, color, center, 10)
+            pygame.draw.circle(surf, dark_color, center, 10, 2)
+            pygame.draw.circle(surf, BLACK, center, 4)
+            
+        elif etype == 'CONFIG':
+            # Brown/orange config box
+            pygame.draw.rect(surf, color, (6, 6, 20, 20), border_radius=3)
+            pygame.draw.rect(surf, dark_color, (6, 6, 20, 20), 2, border_radius=3)
+            # Sliders
+            for i in range(3):
+                y = 10 + i * 6
+                pygame.draw.rect(surf, bright_color, (10, y, 12, 3))
+                pygame.draw.rect(surf, WHITE, (10 + (i % 3) * 4, y, 3, 3))
+            
+        elif etype == 'DESERIALIZE':
+            # Purple box with arrow
+            pygame.draw.rect(surf, color, (6, 6, 20, 20), border_radius=2)
+            pygame.draw.rect(surf, dark_color, (6, 6, 20, 20), 2, border_radius=2)
+            # Arrow down
+            pygame.draw.polygon(surf, WHITE, [(16, 10), (10, 16), (22, 16)])
+            # Lines
+            pygame.draw.line(surf, bright_color, (10, 20), (22, 20), 2)
+            pygame.draw.line(surf, bright_color, (10, 23), (22, 23), 2)
+            
+        elif etype == 'LOGGING':
+            # Gray document
+            pygame.draw.rect(surf, color, (8, 4, 16, 24), border_radius=1)
+            pygame.draw.rect(surf, dark_color, (8, 4, 16, 24), 2, border_radius=1)
+            # Lines
+            for i in range(5):
+                y = 10 + i * 4
+                pygame.draw.line(surf, WHITE, (11, y), (21, y), 1)
+            # Corner fold
+            pygame.draw.polygon(surf, dark_color, [(20, 4), (24, 4), (24, 8)])
+        
+        sprites[etype] = surf
+    
+    return sprites
+
+
+def create_tile_sprites() -> Dict[int, pygame.Surface]:
+    """Create tile sprites for the world map."""
+    sprites = {}
+    
+    # Floor tile (0)
+    surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    surf.fill(VERY_DARK_GREEN)
+    # Subtle grid pattern
+    for x in range(0, TILE_SIZE, 8):
+        pygame.draw.line(surf, (0, 50, 0), (x, 0), (x, TILE_SIZE))
+    for y in range(0, TILE_SIZE, 8):
+        pygame.draw.line(surf, (0, 50, 0), (0, y), (TILE_SIZE, y))
+    # Random noise
+    for _ in range(3):
+        x = random.randint(0, TILE_SIZE - 1)
+        y = random.randint(0, TILE_SIZE - 1)
+        surf.set_at((x, y), (0, 80, 0))
+    sprites[0] = surf
+    
+    # Wall tile (1)
+    surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    surf.fill((0, 60, 0))
+    # Brick pattern
+    for row in range(4):
+        y = row * 8
+        offset = 16 if row % 2 == 1 else 0
+        for col in range(3):
+            x = col * 16 + offset
+            pygame.draw.rect(surf, (0, 80, 0), (x % TILE_SIZE, y, 14, 6))
+            pygame.draw.rect(surf, (0, 40, 0), (x % TILE_SIZE, y, 14, 6), 1)
+    sprites[1] = surf
+    
+    return sprites
+
+
 # =============================================================================
 # PARTICLE SYSTEM
 # =============================================================================
 
 class ParticleSystem:
-    def __init__(self, max_particles: int = 200):
+    def __init__(self, max_particles: int = 300):
         self.particles: List[Particle] = []
         self.max_particles = max_particles
     
-    def add(self, x: float, y: float, color: Tuple[int, int, int], 
-            velocity: Tuple[float, float], lifetime: float = 800, 
+    def add(self, x: float, y: float, color: Tuple[int, int, int],
+            velocity: Tuple[float, float], lifetime: float = 800,
             size: int = 3, gravity: float = 0):
         if len(self.particles) >= self.max_particles:
             self.particles.pop(0)
@@ -690,508 +946,635 @@ class ParticleSystem:
             size=size, gravity=gravity
         ))
     
-    def add_explosion(self, x: float, y: float, color: Tuple[int, int, int], count: int = 12):
+    def add_explosion(self, x: float, y: float, color: Tuple[int, int, int], count: int = 16):
         for _ in range(count):
             angle = random.random() * 2 * math.pi
-            speed = 50 + random.random() * 100
-            self.add(x, y, color, 
+            speed = 60 + random.random() * 140
+            self.add(x, y, color,
                      (math.cos(angle) * speed, math.sin(angle) * speed),
-                     500 + random.random() * 300, 
-                     2 + random.random() * 3, 
-                     0.1)
+                     400 + random.random() * 400,
+                     random.randint(2, 5), 0.1)
     
     def add_damage_number(self, x: float, y: float, amount: int, color: Tuple[int, int, int]):
-        self.add(x, y, color, (0, -30), 1000, 0, -0.05)
-        # Store damage number as text - we'll render separately
+        """Add floating damage number."""
+        # This would need text rendering - simplified as particles
+        for _ in range(8):
+            angle = random.random() * 2 * math.pi
+            speed = 30 + random.random() * 60
+            self.add(x, y, color,
+                     (math.cos(angle) * speed, math.sin(angle) * speed),
+                     600, random.randint(3, 5), -0.05)
+    
+    def add_heal_effect(self, x: float, y: float):
+        for _ in range(12):
+            angle = random.random() * 2 * math.pi
+            speed = 20 + random.random() * 40
+            self.add(x, y, BRIGHT_GREEN,
+                     (math.cos(angle) * speed, math.sin(angle) * speed),
+                     800, random.randint(3, 6), -0.1)
     
     def update(self, dt: float):
         for p in self.particles[:]:
             p.life -= dt
-            p.vy += p.gravity * dt
-            p.x += p.vx * dt / 1000
-            p.y += p.vy * dt / 1000
             if p.life <= 0:
                 self.particles.remove(p)
+                continue
+            p.vy += p.gravity * dt / 1000
+            p.x += p.vx * dt / 1000
+            p.y += p.vy * dt / 1000
     
-    def draw(self, screen: pygame.Surface, camera_x: float, camera_y: float):
+    def draw(self, surface: pygame.Surface, camera_x: float, camera_y: float):
         for p in self.particles:
             alpha = int(255 * (p.life / p.max_life))
-            if alpha <= 0:
-                continue
-            color = (*p.color[:3], alpha)
-            px = int(p.x - camera_x)
-            py = int(p.y - camera_y)
-            if 0 <= px < SCREEN_WIDTH and 0 <= py < SCREEN_HEIGHT:
-                surf = pygame.Surface((p.size * 2, p.size * 2), pygame.SRCALPHA)
-                pygame.draw.circle(surf, color, (p.size, p.size), p.size)
-                screen.blit(surf, (px - p.size, py - p.size))
+            color = (*p.color, alpha)
+            screen_x = int(p.x - camera_x)
+            screen_y = int(p.y - camera_y)
+            if -10 < screen_x < SCREEN_WIDTH + 10 and -10 < screen_y < SCREEN_HEIGHT + 10:
+                pygame.draw.circle(surface, p.color, (screen_x, screen_y), max(1, p.size))
 
 
 # =============================================================================
-# RENDERER
+# RENDERER - RETRO PIXEL ART STYLE
 # =============================================================================
 
 class Renderer:
     def __init__(self, screen: pygame.Surface):
         self.screen = screen
-        self.font_small = pygame.font.Font(None, 16)
-        self.font_medium = pygame.font.Font(None, 20)
-        self.font_large = pygame.font.Font(None, 28)
-        self.font_title = pygame.font.Font(None, 48)
-        self.font_pixel = pygame.font.Font(None, 14)  # Will use default for now
+        self.font_large = pygame.font.Font(None, 48)
+        self.font_medium = pygame.font.Font(None, 28)
+        self.font_small = pygame.font.Font(None, 20)
+        self.font_tiny = pygame.font.Font(None, 16)
+        self.font_pixel = pygame.font.SysFont('Courier New', 14, bold=True)
+        
+        # Create pixel art assets
+        self.player_sprites = create_player_sprites()
+        self.enemy_sprites = create_enemy_sprites()
+        self.tile_sprites = create_tile_sprites()
+        
+        # Pre-create UI surfaces
+        self.create_scanline_surface()
+        self.create_vignette_surface()
+    
+    def create_scanline_surface(self):
+        """Create scanline overlay for CRT effect."""
+        self.scanline_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        for y in range(0, SCREEN_HEIGHT, 2):
+            pygame.draw.line(self.scanline_surface, (0, 0, 0, SCANLINE_ALPHA), (0, y), (SCREEN_WIDTH, y))
+    
+    def create_vignette_surface(self):
+        """Create vignette overlay."""
+        self.vignette_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        center_x, center_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2
+        max_dist = math.hypot(center_x, center_y)
+        for y in range(SCREEN_HEIGHT):
+            for x in range(SCREEN_WIDTH):
+                dist = math.hypot(x - center_x, y - center_y)
+                alpha = int(40 * (dist / max_dist) ** 2)
+                if alpha > 0:
+                    self.vignette_surface.set_at((x, y), (0, 0, 0, alpha))
+    
+    def draw_text_with_shadow(self, surface: pygame.Surface, text: str, font: pygame.font.Font,
+                              x: int, y: int, color: Tuple[int, int, int],
+                              shadow_color: Tuple[int, int, int] = BLACK,
+                              center: bool = False):
+        """Draw text with drop shadow."""
+        text_surf = font.render(text, True, color)
+        shadow_surf = font.render(text, True, shadow_color)
+        if center:
+            x -= text_surf.get_width() // 2
+        surface.blit(shadow_surf, (x + 2, y + 2))
+        surface.blit(text_surf, (x, y))
+        return text_surf.get_width(), text_surf.get_height()
+    
+    def draw_panel(self, surface: pygame.Surface, x: int, y: int, w: int, h: int,
+                   border_color: Tuple[int, int, int] = UI_BORDER,
+                   bg_color: Tuple[int, int, int] = UI_BG):
+        """Draw a retro UI panel."""
+        # Background
+        pygame.draw.rect(surface, bg_color, (x, y, w, h))
+        # Border
+        pygame.draw.rect(surface, border_color, (x, y, w, h), 2)
+        # Inner highlight
+        pygame.draw.rect(surface, (0, 100, 0), (x + 2, y + 2, w - 4, h - 4), 1)
+        # Corner brackets
+        bracket_size = 8
+        corners = [
+            (x, y), (x + w - bracket_size, y),
+            (x, y + h - bracket_size), (x + w - bracket_size, y + h - bracket_size)
+        ]
+        for cx, cy in corners:
+            pygame.draw.line(surface, UI_TEXT_BRIGHT, (cx, cy), (cx + bracket_size, cy), 2)
+            pygame.draw.line(surface, UI_TEXT_BRIGHT, (cx, cy), (cx, cy + bracket_size), 2)
+            pygame.draw.line(surface, UI_TEXT_BRIGHT, (cx + bracket_size, cy + bracket_size), (cx, cy + bracket_size), 2)
+            pygame.draw.line(surface, UI_TEXT_BRIGHT, (cx + bracket_size, cy + bracket_size), (cx + bracket_size, cy), 2)
     
     def draw_world(self, camera_x: float, camera_y: float):
-        """Draw the world map tiles."""
+        """Draw the world map with pixel art tiles."""
         # Visible tile range
-        start_tx = max(0, int(camera_x // TILE_SIZE) - 1)
+        start_tx = max(0, int(camera_x // TILE_SIZE))
         end_tx = min(MAP_WIDTH, int((camera_x + SCREEN_WIDTH) // TILE_SIZE) + 1)
-        start_ty = max(0, int(camera_y // TILE_SIZE) - 1)
+        start_ty = max(0, int(camera_y // TILE_SIZE))
         end_ty = min(MAP_HEIGHT, int((camera_y + SCREEN_HEIGHT) // TILE_SIZE) + 1)
         
         for ty in range(start_ty, end_ty):
             for tx in range(start_tx, end_tx):
-                tile_x = tx * TILE_SIZE - camera_x
-                tile_y = ty * TILE_SIZE - camera_y
-                
-                if WORLD_MAP[ty][tx] == 1:
-                    # Wall
-                    pygame.draw.rect(self.screen, (40, 40, 60), 
-                                   (tile_x, tile_y, TILE_SIZE, TILE_SIZE))
-                    pygame.draw.rect(self.screen, (80, 80, 100), 
-                                   (tile_x, tile_y, TILE_SIZE, TILE_SIZE), 1)
-                else:
-                    # Floor
-                    pygame.draw.rect(self.screen, (15, 15, 25), 
-                                   (tile_x, tile_y, TILE_SIZE, TILE_SIZE))
-                    # Subtle grid
-                    pygame.draw.rect(self.screen, (25, 25, 35), 
-                                   (tile_x, tile_y, TILE_SIZE, TILE_SIZE), 1)
+                tile_type = WORLD_MAP[ty][tx]
+                sprite = self.tile_sprites[tile_type]
+                screen_x = tx * TILE_SIZE - camera_x
+                screen_y = ty * TILE_SIZE - camera_y
+                self.screen.blit(sprite, (screen_x, screen_y))
     
     def draw_player(self, player: Player, camera_x: float, camera_y: float):
-        """Draw the player character."""
-        px = int(player.x - camera_x)
-        py = int(player.y - camera_y)
+        """Draw player with pixel art sprite."""
+        screen_x = int(player.x - camera_x)
+        screen_y = int(player.y - camera_y)
+        
+        # Select sprite
+        facing = player.facing
+        if facing not in self.player_sprites:
+            facing = 'down'
+        frame = player.anim_frame if player.moving else 0
+        sprite = self.player_sprites[facing][frame]
+        
+        # Apply effects
+        if player.invulnerable and int(player.invuln_timer / 100) % 2 == 0:
+            # Flashing when invulnerable
+            return
         
         # Damage flash
         if player.damage_flash > 0:
-            flash_surf = pygame.Surface((player.width, player.height), pygame.SRCALPHA)
-            flash_surf.fill((255, 0, 0, min(150, int(player.damage_flash / 10))))
-            self.screen.blit(flash_surf, (px - player.width//2, py - player.height//2))
-        
-        # Player body (retro pixel style)
-        color = BRIGHT_GREEN if not player.invulnerable or int(player.invuln_timer * 10) % 2 == 0 else (100, 100, 100)
-        
-        # Body
-        pygame.draw.rect(self.screen, color, 
-                        (px - player.width//2, py - player.height//2, 
-                         player.width, player.height))
-        
-        # Face indicator (direction)
-        face_color = WHITE
-        if player.facing == 'up':
-            pygame.draw.rect(self.screen, face_color, (px - 2, py - player.height//2 + 2, 4, 4))
-        elif player.facing == 'down':
-            pygame.draw.rect(self.screen, face_color, (px - 2, py + player.height//2 - 6, 4, 4))
-        elif player.facing == 'left':
-            pygame.draw.rect(self.screen, face_color, (px - player.width//2 + 2, py - 2, 4, 4))
-        elif player.facing == 'right':
-            pygame.draw.rect(self.screen, face_color, (px + player.width//2 - 6, py - 2, 4, 4))
+            flash_surf = sprite.copy()
+            flash_surf.fill((255, 50, 50, 180), special_flags=pygame.BLEND_RGBA_MULT)
+            self.screen.blit(flash_surf, (screen_x - 16, screen_y - 16))
+        elif player.heal_flash > 0:
+            flash_surf = sprite.copy()
+            flash_surf.fill((50, 255, 50, 180), special_flags=pygame.BLEND_RGBA_MULT)
+            self.screen.blit(flash_surf, (screen_x - 16, screen_y - 16))
+        else:
+            self.screen.blit(sprite, (screen_x - 16, screen_y - 16))
         
         # Health bar above player
         if player.hp < player.max_hp:
             bar_w = 30
             bar_h = 4
-            bar_x = px - bar_w // 2
-            bar_y = py - player.height//2 - 10
-            pygame.draw.rect(self.screen, RED, (bar_x, bar_y, bar_w, bar_h))
-            pygame.draw.rect(self.screen, GREEN, (bar_x, bar_y, int(bar_w * player.hp / player.max_hp), bar_h))
-            pygame.draw.rect(self.screen, WHITE, (bar_x, bar_y, bar_w, bar_h), 1)
+            bx = screen_x - bar_w // 2
+            by = screen_y - 28
+            pygame.draw.rect(self.screen, DARK_GREEN, (bx, by, bar_w, bar_h))
+            hp_w = int(bar_w * player.hp / player.max_hp)
+            pygame.draw.rect(self.screen, GREEN, (bx, by, hp_w, bar_h))
+            pygame.draw.rect(self.screen, UI_BORDER, (bx, by, bar_w, bar_h), 1)
     
     def draw_enemy(self, enemy: Enemy, camera_x: float, camera_y: float):
-        """Draw an enemy."""
-        if not enemy.alive:
+        """Draw enemy with pixel art sprite."""
+        if not enemy.alive and enemy.defeated_timer >= 500:
             return
         
-        ex = int(enemy.x - camera_x + enemy.float_offset)
-        ey = int(enemy.y - camera_y)
+        screen_x = int(enemy.x - camera_x)
+        screen_y = int(enemy.y - camera_y) + int(enemy.float_offset)
         
-        # Damage flash
-        if enemy.damage_flash > 0:
-            flash_surf = pygame.Surface((enemy.width, enemy.height), pygame.SRCALPHA)
-            flash_surf.fill((255, 255, 255, min(200, int(enemy.damage_flash / 5))))
-            self.screen.blit(flash_surf, (ex - enemy.width//2, ey - enemy.height//2))
-        
-        # Enemy body
-        pygame.draw.rect(self.screen, enemy.color, 
-                        (ex - enemy.width//2, ey - enemy.height//2, 
-                         enemy.width, enemy.height))
-        
-        # Symbol
-        symbol_surf = self.font_medium.render(enemy.symbol, True, WHITE)
-        self.screen.blit(symbol_surf, (ex - symbol_surf.get_width()//2, ey - symbol_surf.get_height()//2))
+        # Get sprite
+        sprite = self.enemy_sprites.get(enemy.type)
+        if sprite:
+            # Apply effects
+            if enemy.defeated:
+                # Fade out
+                alpha = max(0, 255 - int(enemy.defeated_timer / 500 * 255))
+                sprite_copy = sprite.copy()
+                sprite_copy.set_alpha(alpha)
+                self.screen.blit(sprite_copy, (screen_x - 16, screen_y - 16))
+            elif enemy.damage_flash > 0:
+                flash_surf = sprite.copy()
+                flash_surf.fill((255, 100, 100, 200), special_flags=pygame.BLEND_RGBA_MULT)
+                self.screen.blit(flash_surf, (screen_x - 16, screen_y - 16))
+            else:
+                self.screen.blit(sprite, (screen_x - 16, screen_y - 16))
+        else:
+            # Fallback: colored box with symbol
+            pygame.draw.rect(self.screen, enemy.color, (screen_x - 12, screen_y - 12, 24, 24))
+            pygame.draw.rect(self.screen, WHITE, (screen_x - 12, screen_y - 12, 24, 24), 2)
+            font = pygame.font.Font(None, 20)
+            text = font.render(enemy.symbol, True, WHITE)
+            self.screen.blit(text, (screen_x - text.get_width() // 2, screen_y - 10))
         
         # Health bar
-        if enemy.hp < enemy.max_hp:
-            bar_w = 24
-            bar_h = 3
-            bar_x = ex - bar_w // 2
-            bar_y = ey - enemy.height//2 - 8
-            pygame.draw.rect(self.screen, RED, (bar_x, bar_y, bar_w, bar_h))
-            pygame.draw.rect(self.screen, GREEN, (bar_x, bar_y, int(bar_w * enemy.hp / enemy.max_hp), bar_h))
-            pygame.draw.rect(self.screen, WHITE, (bar_x, bar_y, bar_w, bar_h), 1)
+        if enemy.alive and enemy.hp < enemy.max_hp:
+            bar_w = 32
+            bar_h = 4
+            bx = screen_x - bar_w // 2
+            by = screen_y - 28
+            pygame.draw.rect(self.screen, DARK_GREEN, (bx, by, bar_w, bar_h))
+            hp_w = int(bar_w * enemy.hp / enemy.max_hp)
+            hp_color = GREEN if enemy.hp > enemy.max_hp * 0.3 else RED
+            pygame.draw.rect(self.screen, hp_color, (bx, by, hp_w, bar_h))
+            pygame.draw.rect(self.screen, UI_BORDER, (bx, by, bar_w, bar_h), 1)
+        
+        # Name label (when close to player)
+        # TODO: Could add proximity-based name display
+    
+    def draw_particles(self, particles: ParticleSystem, camera_x: float, camera_y: float):
+        particles.draw(self.screen, camera_x, camera_y)
     
     def draw_hud(self, player: Player):
-        """Draw the HUD."""
-        hud_y = SCREEN_HEIGHT - HUD_HEIGHT
+        """Draw retro HUD."""
+        # Top panel
+        panel_h = 50
+        self.draw_panel(self.screen, 5, 5, SCREEN_WIDTH - 10, panel_h)
         
-        # HUD background
-        hud_surf = pygame.Surface((SCREEN_WIDTH, HUD_HEIGHT), pygame.SRCALPHA)
-        hud_surf.fill((0, 0, 0, 220))
-        self.screen.blit(hud_surf, (0, hud_y))
+        # Health
+        self.draw_text_with_shadow(self.screen, "HP", self.font_small, 20, 12, UI_TEXT)
+        bar_w = 150
+        bar_h = 16
+        bx = 50
+        by = 12
+        pygame.draw.rect(self.screen, VERY_DARK_GREEN, (bx, by, bar_w, bar_h))
+        pygame.draw.rect(self.screen, DARK_GREEN, (bx, by, bar_w, bar_h), 1)
+        hp_w = int(bar_w * player.hp / player.max_hp)
+        hp_color = GREEN if player.hp > player.max_hp * 0.3 else RED
+        pygame.draw.rect(self.screen, hp_color, (bx, by, hp_w, bar_h))
+        hp_text = f"{player.hp}/{player.max_hp}"
+        self.draw_text_with_shadow(self.screen, hp_text, self.font_tiny, bx + bar_w // 2, by + 1, UI_TEXT_BRIGHT, center=True)
         
-        # Border
-        pygame.draw.line(self.screen, UI_BORDER, (0, hud_y), (SCREEN_WIDTH, hud_y), 2)
+        # EXP
+        self.draw_text_with_shadow(self.screen, "EXP", self.font_small, 220, 12, UI_TEXT)
+        exp_w = 120
+        ex = 260
+        ey = 12
+        pygame.draw.rect(self.screen, VERY_DARK_GREEN, (ex, ey, exp_w, bar_h))
+        pygame.draw.rect(self.screen, DARK_GREEN, (ex, ey, exp_w, bar_h), 1)
+        exp_fill = int(exp_w * player.exp / player.exp_to_next)
+        pygame.draw.rect(self.screen, YELLOW, (ex, ey, exp_fill, bar_h))
+        exp_text = f"{player.exp}/{player.exp_to_next}"
+        self.draw_text_with_shadow(self.screen, exp_text, self.font_tiny, ex + exp_w // 2, ey + 1, BRIGHT_YELLOW, center=True)
+        
+        # Level
+        self.draw_text_with_shadow(self.screen, f"LV {player.level}", self.font_medium, 400, 10, UI_TEXT_BRIGHT)
         
         # Stats
-        stats = [
-            f"HP: {player.hp}/{player.max_hp}",
-            f"ATK: {player.atk}",
-            f"DEF: {player.def_}",
-            f"LVL: {player.level}",
-            f"EXP: {player.exp}/{player.exp_to_next}",
-            f"Enemies: {player.enemies_defeated}",
-            f"Accuracy: {player.accuracy['correct']}/{player.accuracy['total']}" 
-            if player.accuracy['total'] > 0 else "Accuracy: -"
-        ]
+        self.draw_text_with_shadow(self.screen, f"ATK {player.atk}  DEF {player.def_}", self.font_small, 400, 32, UI_TEXT)
         
-        for i, stat in enumerate(stats):
-            x = 20 + (i % 4) * 190
-            y = hud_y + 15 + (i // 4) * 30
-            text = self.font_medium.render(stat, True, UI_TEXT)
-            self.screen.blit(text, (x, y))
+        # Defeated count
+        self.draw_text_with_shadow(self.screen, f"DEFEATED: {player.enemies_defeated}/8", self.font_small, 600, 12, UI_TEXT_BRIGHT)
         
-        # HP Bar
-        bar_w = 200
-        bar_h = 16
-        bar_x = SCREEN_WIDTH - bar_w - 20
-        bar_y = hud_y + 15
-        pygame.draw.rect(self.screen, DARK_GRAY, (bar_x, bar_y, bar_w, bar_h))
-        pygame.draw.rect(self.screen, RED, (bar_x, bar_y, bar_w, bar_h))
-        pygame.draw.rect(self.screen, GREEN, (bar_x, bar_y, int(bar_w * player.hp / player.max_hp), bar_h))
-        pygame.draw.rect(self.screen, UI_BORDER, (bar_x, bar_y, bar_w, bar_h), 2)
+        # Accuracy
+        if player.accuracy['total'] > 0:
+            acc = player.accuracy['correct'] * 100 // player.accuracy['total']
+            self.draw_text_with_shadow(self.screen, f"ACC: {acc}%", self.font_small, 600, 32, UI_TEXT)
         
-        hp_text = self.font_small.render(f"HP: {player.hp}/{player.max_hp}", True, WHITE)
-        self.screen.blit(hp_text, (bar_x + bar_w//2 - hp_text.get_width()//2, bar_y + 1))
-        
-        # EXP Bar
-        exp_y = bar_y + 25
-        pygame.draw.rect(self.screen, DARK_GRAY, (bar_x, exp_y, bar_w, 8))
-        pygame.draw.rect(self.screen, CYAN, (bar_x, exp_y, int(bar_w * player.exp / player.exp_to_next), 8))
-        pygame.draw.rect(self.screen, UI_BORDER, (bar_x, exp_y, bar_w, 8), 1)
+        # Mini-map (top right)
+        self.draw_minimap(player)
     
-    def draw_dialogue_box(self, text: str, speaker: str = ""):
-        """Draw dialogue box at bottom."""
-        box_h = 140
-        box_y = SCREEN_HEIGHT - box_h - 10
-        box_surf = pygame.Surface((SCREEN_WIDTH - 20, box_h), pygame.SRCALPHA)
-        box_surf.fill((0, 0, 0, 230))
-        self.screen.blit(box_surf, (10, box_y))
-        pygame.draw.rect(self.screen, UI_BORDER, (10, box_y, SCREEN_WIDTH - 20, box_h), 2)
+    def draw_minimap(self, player: Player):
+        """Draw minimap in top right."""
+        mm_size = 120
+        mm_x = SCREEN_WIDTH - mm_size - 10
+        mm_y = 10
+        scale = mm_size / max(MAP_WIDTH, MAP_HEIGHT)
         
-        if speaker:
-            name_text = self.font_medium.render(speaker, True, YELLOW)
-            self.screen.blit(name_text, (20, box_y + 10))
+        # Background
+        self.draw_panel(self.screen, mm_x - 2, mm_y - 2, mm_size + 4, mm_size + 4,
+                       border_color=DARK_GREEN, bg_color=VERY_DARK_GREEN)
         
-        # Word wrap
+        # Draw map
+        for ty in range(MAP_HEIGHT):
+            for tx in range(MAP_WIDTH):
+                if WORLD_MAP[ty][tx] == 1:
+                    px = mm_x + int(tx * scale)
+                    py = mm_y + int(ty * scale)
+                    pw = max(1, int(scale))
+                    ph = max(1, int(scale))
+                    pygame.draw.rect(self.screen, DARK_GREEN, (px, py, pw, ph))
+        
+        # Player dot
+        px = mm_x + int(player.x / TILE_SIZE * scale)
+        py = mm_y + int(player.y / TILE_SIZE * scale)
+        pygame.draw.circle(self.screen, BRIGHT_GREEN, (px, py), 3)
+        
+        # Enemy dots
+        for enemy in getattr(self, 'enemies', []):
+            if enemy.alive:
+                ex = mm_x + int(enemy.x / TILE_SIZE * scale)
+                ey = mm_y + int(enemy.y / TILE_SIZE * scale)
+                pygame.draw.circle(self.screen, RED, (ex, ey), 2)
+    
+    def draw_combat(self, combat: CombatState, player: Player):
+        """Draw combat overlay with retro terminal style."""
+        # Full screen overlay
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 220))
+        self.screen.blit(overlay, (0, 0))
+        
+        # Combat panel
+        panel_w = 700
+        panel_h = 450
+        panel_x = (SCREEN_WIDTH - panel_w) // 2
+        panel_y = (SCREEN_HEIGHT - panel_h) // 2
+        self.draw_panel(self.screen, panel_x, panel_y, panel_w, panel_h)
+        
+        # Header
+        header_y = panel_y + 15
+        self.draw_text_with_shadow(self.screen, "⚔ COMBAT INITIATED ⚔", self.font_medium,
+                                  panel_x + panel_w // 2, header_y, UI_TEXT_BRIGHT, center=True)
+        
+        # Enemy info
+        if combat.enemy:
+            enemy = combat.enemy
+            info_y = header_y + 35
+            self.draw_text_with_shadow(self.screen, f"THREAT: {enemy.name}", self.font_medium,
+                                      panel_x + 20, info_y, enemy.color)
+            self.draw_text_with_shadow(self.screen, f"TYPE: {enemy.category}", self.font_small,
+                                      panel_x + 20, info_y + 25, UI_TEXT)
+            self.draw_text_with_shadow(self.screen, enemy.description, self.font_tiny,
+                                      panel_x + 20, info_y + 48, UI_TEXT)
+            
+            # Enemy HP bar
+            hp_y = info_y + 70
+            self.draw_text_with_shadow(self.screen, "ENEMY HP", self.font_small,
+                                      panel_x + 20, hp_y, UI_TEXT)
+            bar_w = 300
+            bar_h = 16
+            bx = panel_x + 20
+            by = hp_y + 20
+            pygame.draw.rect(self.screen, VERY_DARK_GREEN, (bx, by, bar_w, bar_h))
+            pygame.draw.rect(self.screen, DARK_GREEN, (bx, by, bar_w, bar_h), 1)
+            hp_fill = int(bar_w * max(0, enemy.hp) / enemy.max_hp)
+            hp_color = GREEN if enemy.hp > enemy.max_hp * 0.3 else RED
+            pygame.draw.rect(self.screen, hp_color, (bx, by, hp_fill, bar_h))
+            hp_text = f"{max(0, enemy.hp)}/{enemy.max_hp}"
+            self.draw_text_with_shadow(self.screen, hp_text, self.font_tiny,
+                                      bx + bar_w // 2, by + 1, UI_TEXT_BRIGHT, center=True)
+            
+            # Player HP in combat
+            self.draw_text_with_shadow(self.screen, "YOUR HP", self.font_small,
+                                      panel_x + 350, hp_y, UI_TEXT)
+            bx2 = panel_x + 350
+            pygame.draw.rect(self.screen, VERY_DARK_GREEN, (bx2, by, bar_w, bar_h))
+            pygame.draw.rect(self.screen, DARK_GREEN, (bx2, by, bar_w, bar_h), 1)
+            hp_fill2 = int(bar_w * player.hp / player.max_hp)
+            pygame.draw.rect(self.screen, GREEN, (bx2, by, hp_fill2, bar_h))
+            hp_text2 = f"{player.hp}/{player.max_hp}"
+            self.draw_text_with_shadow(self.screen, hp_text2, self.font_tiny,
+                                      bx2 + bar_w // 2, by + 1, UI_TEXT_BRIGHT, center=True)
+            
+            # Timer
+            timer_y = by + bar_h + 15
+            timer_pct = combat.timer / combat.max_timer
+            timer_w = int(300 * timer_pct)
+            timer_color = GREEN if timer_pct > 0.5 else (YELLOW if timer_pct > 0.25 else RED)
+            self.draw_text_with_shadow(self.screen, f"TIME: {combat.timer:.1f}s", self.font_small,
+                                      panel_x + 20, timer_y, timer_color)
+            pygame.draw.rect(self.screen, VERY_DARK_GREEN, (panel_x + 20, timer_y + 20, 300, 8))
+            pygame.draw.rect(self.screen, timer_color, (panel_x + 20, timer_y + 20, timer_w, 8))
+        
+        # Question
+        if combat.question:
+            q_y = panel_y + 180
+            self.draw_text_with_shadow(self.screen, "SECURITY QUESTION:", self.font_small,
+                                      panel_x + 20, q_y, YELLOW)
+            
+            # Typewriter text
+            q_text = combat.typewriter_text if combat.typewriter_text else combat.question['question']
+            self.draw_text_wrapped(q_text, self.font_small, panel_x + 20, q_y + 25,
+                                  panel_w - 40, UI_TEXT_BRIGHT)
+            
+            # Choices
+            choice_y = q_y + 100
+            for i, choice in enumerate(combat.question['choices']):
+                color = UI_TEXT_BRIGHT if i == combat.selected_answer else UI_TEXT
+                prefix = "► " if i == combat.selected_answer else "  "
+                self.draw_text_with_shadow(self.screen, f"{prefix}{chr(65+i)}) {choice}",
+                                          self.font_small, panel_x + 40, choice_y + i * 35, color)
+            
+            # Result feedback
+            if combat.result:
+                res_y = choice_y + 150
+                if combat.result == 'correct':
+                    res_text = f"✓ CORRECT! Damage dealt: {combat.damage_dealt}"
+                    res_color = GREEN
+                elif combat.result == 'incorrect':
+                    res_text = f"✗ WRONG! Damage taken: {combat.damage_taken}"
+                    res_color = RED
+                else:  # timeout
+                    res_text = f"⏱ TIME OUT! Damage taken: {combat.damage_taken}"
+                    res_color = RED
+                
+                self.draw_text_with_shadow(self.screen, res_text, self.font_medium,
+                                          panel_x + panel_w // 2, res_y, res_color, center=True)
+                
+                # Continue prompt
+                cont_y = res_y + 40
+                alpha = int(128 + 127 * math.sin(pygame.time.get_ticks() / 200))
+                cont_color = (0, 255, 100, alpha)
+                cont_surf = self.font_small.render("Press ENTER to continue...", True, UI_TEXT_BRIGHT)
+                self.screen.blit(cont_surf, (panel_x + panel_w // 2 - cont_surf.get_width() // 2, cont_y))
+    
+    def draw_text_wrapped(self, text: str, font: pygame.font.Font, x: int, y: int,
+                          max_width: int, color: Tuple[int, int, int]):
+        """Draw word-wrapped text."""
         words = text.split(' ')
         lines = []
         current_line = []
-        max_width = SCREEN_WIDTH - 40
+        current_width = 0
         
         for word in words:
-            test_line = ' '.join(current_line + [word])
-            test_surf = self.font_small.render(test_line, True, WHITE)
-            if test_surf.get_width() > max_width and current_line:
+            word_surf = font.render(word + ' ', True, color)
+            word_w = word_surf.get_width()
+            if current_width + word_w > max_width:
                 lines.append(' '.join(current_line))
                 current_line = [word]
+                current_width = word_w
             else:
                 current_line.append(word)
+                current_width += word_w
         if current_line:
             lines.append(' '.join(current_line))
         
-        for i, line in enumerate(lines[:6]):
-            text_surf = self.font_small.render(line, True, UI_TEXT)
-            self.screen.blit(text_surf, (20, box_y + 35 + i * 18))
-        
-        # Continue prompt
-        prompt = self.font_small.render("[Press SPACE/ENTER to continue]", True, GRAY)
-        self.screen.blit(prompt, (SCREEN_WIDTH//2 - prompt.get_width()//2, box_y + box_h - 25))
+        for i, line in enumerate(lines):
+            self.draw_text_with_shadow(self.screen, line, font, x, y + i * 22, color)
     
-    def draw_combat(self, combat: CombatState, player: Player):
-        """Draw combat screen."""
-        # Background overlay
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 240))
-        self.screen.blit(overlay, (0, 0))
-        
-        # Combat box
-        box_w = 700
-        box_h = 450
-        box_x = (SCREEN_WIDTH - box_w) // 2
-        box_y = (SCREEN_HEIGHT - box_h) // 2
-        
-        pygame.draw.rect(self.screen, UI_BG, (box_x, box_y, box_w, box_h))
-        pygame.draw.rect(self.screen, UI_BORDER, (box_x, box_y, box_w, box_h), 3)
-        
-        # Title
-        title = self.font_large.render("⚔ COMBAT ENCOUNTER ⚔", True, YELLOW)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, box_y + 20))
-        
-        if combat.enemy:
-            # Enemy info
-            enemy_name = self.font_medium.render(f"{combat.enemy.name} (Lv.{combat.enemy.level})", True, combat.enemy.color)
-            self.screen.blit(enemy_name, (box_x + 30, box_y + 70))
-            
-            cat_text = self.font_small.render(combat.enemy.category, True, CYAN)
-            self.screen.blit(cat_text, (box_x + 30, box_y + 95))
-            
-            # Enemy HP
-            ehp_w = 200
-            ehp_h = 12
-            ehp_x = box_x + 30
-            ehp_y = box_y + 120
-            pygame.draw.rect(self.screen, RED, (ehp_x, ehp_y, ehp_w, ehp_h))
-            pygame.draw.rect(self.screen, GREEN, (ehp_x, ehp_y, int(ehp_w * combat.enemy.hp / combat.enemy.max_hp), ehp_h))
-            pygame.draw.rect(self.screen, WHITE, (ehp_x, ehp_y, ehp_w, ehp_h), 1)
-            
-            ehp_text = self.font_small.render(f"{combat.enemy.hp}/{combat.enemy.max_hp}", True, WHITE)
-            self.screen.blit(ehp_text, (ehp_x + ehp_w//2 - ehp_text.get_width()//2, ehp_y - 1))
-        
-        # Player HP
-        php_w = 200
-        php_h = 12
-        php_x = box_x + box_w - php_w - 30
-        php_y = box_y + 120
-        pygame.draw.rect(self.screen, RED, (php_x, php_y, php_w, php_h))
-        pygame.draw.rect(self.screen, GREEN, (php_x, php_y, int(php_w * player.hp / player.max_hp), php_h))
-        pygame.draw.rect(self.screen, WHITE, (php_x, php_y, php_w, php_h), 1)
-        
-        php_text = self.font_small.render(f"YOU: {player.hp}/{player.max_hp}", True, WHITE)
-        self.screen.blit(php_text, (php_x + php_w//2 - php_text.get_width()//2, php_y - 1))
-        
-        if combat.question:
-            # Question
-            q_text = combat.typewriter_text if combat.typewriter_text else combat.question['question']
-            q_surf = self.font_medium.render(q_text, True, WHITE)
-            self.screen.blit(q_surf, (box_x + 30, box_y + 160))
-            
-            # Timer
-            timer_pct = combat.timer / combat.max_timer
-            timer_w = 400
-            timer_x = box_x + 30
-            timer_y = box_y + 200
-            pygame.draw.rect(self.screen, DARK_GRAY, (timer_x, timer_y, timer_w, 12))
-            timer_color = GREEN if timer_pct > 0.5 else (YELLOW if timer_pct > 0.25 else RED)
-            pygame.draw.rect(self.screen, timer_color, (timer_x, timer_y, int(timer_w * timer_pct), 12))
-            pygame.draw.rect(self.screen, WHITE, (timer_x, timer_y, timer_w, 12), 1)
-            
-            timer_text = self.font_small.render(f"{combat.timer:.1f}s", True, WHITE)
-            self.screen.blit(timer_text, (timer_x + timer_w + 10, timer_y - 1))
-            
-            # Answer options
-            for i, choice in enumerate(combat.question['choices']):
-                ay = box_y + 230 + i * 45
-                selected = (i == combat.selected_answer)
-                
-                if selected:
-                    pygame.draw.rect(self.screen, MENU_SELECTED, (box_x + 20, ay - 5, box_w - 40, 40))
-                    pygame.draw.rect(self.screen, UI_BORDER, (box_x + 20, ay - 5, box_w - 40, 40), 2)
-                    color = UI_TEXT_BRIGHT
-                    prefix = "► "
-                else:
-                    color = UI_TEXT
-                    prefix = "  "
-                
-                choice_text = self.font_small.render(f"{prefix}{chr(65+i)}) {choice}", True, color)
-                self.screen.blit(choice_text, (box_x + 35, ay + 5))
-        
-        if combat.result:
-            # Result display
-            result_color = GREEN if combat.result == 'correct' else RED
-            result_text = "CORRECT!" if combat.result == 'correct' else "INCORRECT!" if combat.result == 'incorrect' else "TIME'S UP!"
-            result_surf = self.font_large.render(result_text, True, result_color)
-            self.screen.blit(result_surf, (SCREEN_WIDTH//2 - result_surf.get_width()//2, box_y + 350))
-            
-            if combat.result == 'correct':
-                dmg_text = self.font_medium.render(f"Dealt {combat.damage_dealt} damage!", True, GREEN)
-            else:
-                dmg_text = self.font_medium.render(f"Took {combat.damage_taken} damage!", True, RED)
-            self.screen.blit(dmg_text, (SCREEN_WIDTH//2 - dmg_text.get_width()//2, box_y + 390))
-    
-    def draw_pause_menu(self, selected_index: int):
-        """Draw pause menu."""
+    def draw_pause_menu(self, selection: int):
+        """Draw pause menu with highlighted selection."""
         # Overlay
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         self.screen.blit(overlay, (0, 0))
         
-        # Menu box
-        box_w = 400
-        box_h = 300
-        box_x = (SCREEN_WIDTH - box_w) // 2
-        box_y = (SCREEN_HEIGHT - box_h) // 2
-        
-        pygame.draw.rect(self.screen, UI_BG, (box_x, box_y, box_w, box_h))
-        pygame.draw.rect(self.screen, UI_BORDER, (box_x, box_y, box_w, box_h), 3)
+        panel_w = 400
+        panel_h = 300
+        panel_x = (SCREEN_WIDTH - panel_w) // 2
+        panel_y = (SCREEN_HEIGHT - panel_h) // 2
+        self.draw_panel(self.screen, panel_x, panel_y, panel_w, panel_h)
         
         # Title
-        title = self.font_large.render("PAUSED", True, YELLOW)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, box_y + 30))
+        self.draw_text_with_shadow(self.screen, "◆ PAUSED ◆", self.font_large,
+                                  panel_x + panel_w // 2, panel_y + 20, UI_TEXT_BRIGHT, center=True)
         
-        options = [
-            "Resume Game",
-            "View Stats",
-            "Controls",
-            "Quit to Title"
-        ]
-        
+        options = ["Resume Game", "View Stats", "Controls", "Quit to Title"]
         for i, opt in enumerate(options):
-            oy = box_y + 100 + i * 50
-            selected = (i == selected_index)
-            
-            if selected:
-                pygame.draw.rect(self.screen, MENU_SELECTED, (box_x + 30, oy - 5, box_w - 60, 40))
-                pygame.draw.rect(self.screen, UI_BORDER, (box_x + 30, oy - 5, box_w - 60, 40), 2)
-                color = UI_TEXT_BRIGHT
-                prefix = "► "
+            y = panel_y + 80 + i * 45
+            if i == selection:
+                # Highlight background
+                pygame.draw.rect(self.screen, MENU_SELECTED,
+                               (panel_x + 20, y - 5, panel_w - 40, 35))
+                pygame.draw.rect(self.screen, MENU_SELECTED_BORDER,
+                               (panel_x + 20, y - 5, panel_w - 40, 35), 2)
+                # Selection arrow
+                self.draw_text_with_shadow(self.screen, "►", self.font_medium,
+                                          panel_x + 30, y, UI_TEXT_BRIGHT)
+                self.draw_text_with_shadow(self.screen, opt, self.font_medium,
+                                          panel_x + 60, y, UI_TEXT_BRIGHT)
             else:
-                color = UI_TEXT
-                prefix = "  "
-            
-            opt_text = self.font_medium.render(f"{prefix}{opt}", True, color)
-            self.screen.blit(opt_text, (box_x + 50, oy + 5))
+                self.draw_text_with_shadow(self.screen, opt, self.font_medium,
+                                          panel_x + 60, y, UI_TEXT)
         
-        # Controls hint
-        hint = self.font_small.render("UP/DOWN: Navigate  |  ENTER: Select  |  ESC: Resume", True, GRAY)
-        self.screen.blit(hint, (SCREEN_WIDTH//2 - hint.get_width()//2, box_y + box_h - 40))
+        # Hint
+        self.draw_text_with_shadow(self.screen, "↑/↓ Navigate  •  ENTER Select  •  ESC Close",
+                                  self.font_tiny, panel_x + panel_w // 2,
+                                  panel_y + panel_h - 30, GRAY, center=True)
+    
+    def draw_dialogue_box(self, text: str, speaker: str):
+        """Draw dialogue box at bottom."""
+        box_h = 160
+        box_y = SCREEN_HEIGHT - box_h - 10
+        self.draw_panel(self.screen, 10, box_y, SCREEN_WIDTH - 20, box_h)
+        
+        # Speaker name
+        self.draw_text_with_shadow(self.screen, f"[{speaker}]", self.font_medium,
+                                  25, box_y + 10, YELLOW)
+        
+        # Text with typewriter effect would go here - simplified
+        self.draw_text_wrapped(text, self.font_small, 25, box_y + 40,
+                              SCREEN_WIDTH - 50, UI_TEXT_BRIGHT)
+        
+        # Continue prompt
+        prompt = "Press SPACE/ENTER to continue..."
+        prompt_surf = self.font_tiny.render(prompt, True, GRAY)
+        self.screen.blit(prompt_surf, (SCREEN_WIDTH // 2 - prompt_surf.get_width() // 2,
+                                       box_y + box_h - 25))
     
     def draw_title(self, anim_time: float):
-        """Draw title screen."""
+        """Draw retro title screen."""
         self.screen.fill(BLACK)
         
-        # Animated background
-        for i in range(20):
-            x = (anim_time * 20 + i * 100) % (SCREEN_WIDTH + 200) - 100
-            y = 100 + math.sin(anim_time * 0.005 + i) * 50
-            alpha = int(50 + 30 * math.sin(anim_time * 0.01 + i))
-            color = (0, alpha, alpha // 2)
-            pygame.draw.circle(self.screen, color, (int(x), int(y)), 2)
+        # Background pattern
+        for y in range(0, SCREEN_HEIGHT, 40):
+            for x in range(0, SCREEN_WIDTH, 40):
+                offset = int(anim_time / 200) % 2
+                if (x + y + offset * 20) % 80 < 40:
+                    pygame.draw.rect(self.screen, VERY_DARK_GREEN, (x, y, 40, 40))
         
         # Title
-        title1 = self.font_title.render("APPSEC RPG", True, BRIGHT_GREEN)
-        title2 = self.font_large.render("Guardians of the Code", True, CYAN)
-        self.screen.blit(title1, (SCREEN_WIDTH//2 - title1.get_width()//2, 150))
-        self.screen.blit(title2, (SCREEN_WIDTH//2 - title2.get_width()//2, 210))
+        title_y = 100 + int(10 * math.sin(anim_time / 500))
+        self.draw_text_with_shadow(self.screen, "APPSEC RPG", self.font_large,
+                                  SCREEN_WIDTH // 2, title_y, UI_TEXT_BRIGHT, center=True)
+        self.draw_text_with_shadow(self.screen, "GUARDIANS OF THE CODE", self.font_medium,
+                                  SCREEN_WIDTH // 2, title_y + 50, GREEN, center=True)
         
         # Subtitle
-        sub = self.font_medium.render("OWASP Top 10 Quiz Combat", True, UI_TEXT)
-        self.screen.blit(sub, (SCREEN_WIDTH//2 - sub.get_width()//2, 260))
-        
-        # Start prompt
-        pulse = int(127 + 127 * math.sin(anim_time * 0.005))
-        start_color = (pulse, 255, pulse)
-        start_text = self.font_medium.render("PRESS ENTER TO START", True, start_color)
-        self.screen.blit(start_text, (SCREEN_WIDTH//2 - start_text.get_width()//2, 350))
-        
-        # Controls
-        controls = [
-            "WASD / Arrow Keys: Move",
-            "SPACE / ENTER: Interact / Continue",
-            "ESC: Pause Menu",
-            "Arrow Keys in Combat: Select Answer"
-        ]
-        for i, ctrl in enumerate(controls):
-            ctrl_text = self.font_small.render(ctrl, True, GRAY)
-            self.screen.blit(ctrl_text, (SCREEN_WIDTH//2 - ctrl_text.get_width()//2, 420 + i * 25))
+        self.draw_text_with_shadow(self.screen, "OWASP Top 10 Quiz Combat", self.font_small,
+                                  SCREEN_WIDTH // 2, title_y + 100, UI_TEXT, center=True)
         
         # Version
-        ver = self.font_small.render("v1.0.0 - Built with Pygame", True, DARK_GRAY)
-        self.screen.blit(ver, (SCREEN_WIDTH//2 - ver.get_width()//2, SCREEN_HEIGHT - 40))
+        self.draw_text_with_shadow(self.screen, "v1.0.0  •  Python + Pygame", self.font_tiny,
+                                  SCREEN_WIDTH // 2, title_y + 130, GRAY, center=True)
+        
+        # Enemy showcase
+        showcase_y = title_y + 180
+        self.draw_text_with_shadow(self.screen, "THREATS TO DEFEAT:", self.font_small,
+                                  SCREEN_WIDTH // 2, showcase_y, YELLOW, center=True)
+        
+        enemy_list = list(ENEMY_TYPES.items())
+        for i, (etype, data) in enumerate(enemy_list):
+            col = i % 4
+            row = i // 4
+            ex = SCREEN_WIDTH // 2 - 300 + col * 150
+            ey = showcase_y + 30 + row * 60
+            
+            # Draw mini sprite
+            sprite = self.enemy_sprites.get(etype)
+            if sprite:
+                mini = pygame.transform.scale(sprite, (32, 32))
+                self.screen.blit(mini, (ex, ey))
+            
+            self.draw_text_with_shadow(self.screen, data['name'], self.font_tiny,
+                                      ex + 40, ey + 5, UI_TEXT)
+            self.draw_text_with_shadow(self.screen, data['category'], self.font_tiny,
+                                      ex + 40, ey + 20, GRAY)
+        
+        # Start prompt
+        prompt_y = SCREEN_HEIGHT - 80
+        alpha = int(128 + 127 * math.sin(anim_time / 300))
+        prompt_color = (min(255, UI_TEXT_BRIGHT[0] + alpha // 4),
+                       min(255, UI_TEXT_BRIGHT[1] + alpha // 4),
+                       min(255, UI_TEXT_BRIGHT[2] + alpha // 4))
+        self.draw_text_with_shadow(self.screen, "PRESS ENTER TO START", self.font_medium,
+                                  SCREEN_WIDTH // 2, prompt_y, prompt_color, center=True)
+        
+        # Controls hint
+        self.draw_text_with_shadow(self.screen, "WASD/Arrows: Move  •  SPACE/ENTER: Interact  •  ESC: Pause",
+                                  self.font_tiny, SCREEN_WIDTH // 2, prompt_y + 40, GRAY, center=True)
+        
+        # Apply scanlines
+        self.screen.blit(self.scanline_surface, (0, 0))
     
     def draw_game_over(self, player: Player):
         """Draw game over screen."""
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 220))
-        self.screen.blit(overlay, (0, 0))
+        self.screen.fill(BLACK)
         
-        box_w = 500
-        box_h = 350
-        box_x = (SCREEN_WIDTH - box_w) // 2
-        box_y = (SCREEN_HEIGHT - box_h) // 2
+        self.draw_text_with_shadow(self.screen, "GAME OVER", self.font_large,
+                                  SCREEN_WIDTH // 2, 200, RED, center=True)
+        self.draw_text_with_shadow(self.screen, f"Level Reached: {player.level}", self.font_medium,
+                                  SCREEN_WIDTH // 2, 270, UI_TEXT, center=True)
+        self.draw_text_with_shadow(self.screen, f"Enemies Defeated: {player.enemies_defeated}/8", self.font_medium,
+                                  SCREEN_WIDTH // 2, 310, UI_TEXT, center=True)
+        if player.accuracy['total'] > 0:
+            acc = player.accuracy['correct'] * 100 // player.accuracy['total']
+            self.draw_text_with_shadow(self.screen, f"Accuracy: {acc}%", self.font_medium,
+                                      SCREEN_WIDTH // 2, 350, UI_TEXT, center=True)
         
-        pygame.draw.rect(self.screen, UI_BG, (box_x, box_y, box_w, box_h))
-        pygame.draw.rect(self.screen, RED, (box_x, box_y, box_w, box_h), 3)
+        self.draw_text_with_shadow(self.screen, "Press ENTER to return to title", self.font_small,
+                                  SCREEN_WIDTH // 2, 450, GRAY, center=True)
         
-        title = self.font_title.render("GAME OVER", True, RED)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, box_y + 40))
-        
-        stats = [
-            f"Level Reached: {player.level}",
-            f"Enemies Defeated: {player.enemies_defeated}",
-            f"Questions Answered: {player.questions_answered}",
-            f"Accuracy: {player.accuracy['correct']}/{player.accuracy['total']}" 
-            if player.accuracy['total'] > 0 else "Accuracy: -"
-        ]
-        
-        for i, stat in enumerate(stats):
-            stat_text = self.font_medium.render(stat, True, UI_TEXT)
-            self.screen.blit(stat_text, (SCREEN_WIDTH//2 - stat_text.get_width()//2, box_y + 120 + i * 35))
-        
-        prompt = self.font_medium.render("PRESS ENTER TO RESTART", True, YELLOW)
-        self.screen.blit(prompt, (SCREEN_WIDTH//2 - prompt.get_width()//2, box_y + box_h - 60))
+        self.screen.blit(self.scanline_surface, (0, 0))
     
     def draw_victory(self, player: Player):
         """Draw victory screen."""
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 220))
-        self.screen.blit(overlay, (0, 0))
+        self.screen.fill(BLACK)
         
-        box_w = 500
-        box_h = 350
-        box_x = (SCREEN_WIDTH - box_w) // 2
-        box_y = (SCREEN_HEIGHT - box_h) // 2
+        # Celebration animation
+        for i in range(20):
+            angle = (pygame.time.get_ticks() / 500 + i * 0.3) % (2 * math.pi)
+            x = SCREEN_WIDTH // 2 + math.cos(angle) * 200
+            y = SCREEN_HEIGHT // 2 + math.sin(angle) * 100
+            color = [GREEN, YELLOW, CYAN, MAGENTA][i % 4]
+            pygame.draw.circle(self.screen, color, (int(x), int(y)), 5)
         
-        pygame.draw.rect(self.screen, UI_BG, (box_x, box_y, box_w, box_h))
-        pygame.draw.rect(self.screen, GREEN, (box_x, box_y, box_w, box_h), 3)
+        self.draw_text_with_shadow(self.screen, "█ SYSTEM SECURED █", self.font_large,
+                                  SCREEN_WIDTH // 2, 200, BRIGHT_GREEN, center=True)
+        self.draw_text_with_shadow(self.screen, "ALL VULNERABILITIES NEUTRALIZED", self.font_medium,
+                                  SCREEN_WIDTH // 2, 270, UI_TEXT_BRIGHT, center=True)
         
-        title = self.font_title.render("VICTORY!", True, GREEN)
-        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, box_y + 40))
+        self.draw_text_with_shadow(self.screen, f"Final Level: {player.level}", self.font_medium,
+                                  SCREEN_WIDTH // 2, 330, UI_TEXT, center=True)
+        self.draw_text_with_shadow(self.screen, f"Total EXP: {sum(e.xp_reward for e in [] if False) + player.exp}", self.font_medium,
+                                  SCREEN_WIDTH // 2, 370, UI_TEXT, center=True)
+        if player.accuracy['total'] > 0:
+            acc = player.accuracy['correct'] * 100 // player.accuracy['total']
+            self.draw_text_with_shadow(self.screen, f"Final Accuracy: {acc}%", self.font_medium,
+                                      SCREEN_WIDTH // 2, 410, UI_TEXT, center=True)
         
-        sub = self.font_large.render("You secured the codebase!", True, BRIGHT_GREEN)
-        self.screen.blit(sub, (SCREEN_WIDTH//2 - sub.get_width()//2, box_y + 100))
+        self.draw_text_with_shadow(self.screen, "Press ENTER to play again", self.font_small,
+                                  SCREEN_WIDTH // 2, 500, GRAY, center=True)
         
-        stats = [
-            f"Final Level: {player.level}",
-            f"Enemies Defeated: {player.enemies_defeated}",
-            f"Questions Answered: {player.questions_answered}",
-            f"Accuracy: {player.accuracy['correct']}/{player.accuracy['total']}" 
-            if player.accuracy['total'] > 0 else "Accuracy: -"
-        ]
-        
-        for i, stat in enumerate(stats):
-            stat_text = self.font_medium.render(stat, True, UI_TEXT)
-            self.screen.blit(stat_text, (SCREEN_WIDTH//2 - stat_text.get_width()//2, box_y + 160 + i * 35))
-        
-        prompt = self.font_medium.render("PRESS ENTER TO PLAY AGAIN", True, YELLOW)
-        self.screen.blit(prompt, (SCREEN_WIDTH//2 - prompt.get_width()//2, box_y + box_h - 60))
+        self.screen.blit(self.scanline_surface, (0, 0))
     
-    def draw_particles(self, particles: ParticleSystem, camera_x: float, camera_y: float):
-        """Draw particles."""
-        particles.draw(self.screen, camera_x, camera_y)
+    def apply_post_effects(self):
+        """Apply CRT scanlines and vignette."""
+        self.screen.blit(self.scanline_surface, (0, 0))
+        self.screen.blit(self.vignette_surface, (0, 0))
 
 
 # =============================================================================
-# GAME ENGINE
+# GAME CLASS
 # =============================================================================
 
 class Game:
@@ -1260,7 +1643,7 @@ class Game:
                 if self.state == GameState.TITLE:
                     if event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         self.state = GameState.OVERWORLD
-                        self.show_dialogue("Welcome, Guardian! Defeat the vulnerabilities\nto secure the codebase.", "SYSTEM")
+                        self.show_dialogue("Welcome, Guardian! Defeat the vulnerabilities\nto secure the codebase. Press SPACE near enemies to engage.", "SYSTEM")
                 
                 elif self.state == GameState.OVERWORLD:
                     if event.key == pygame.K_ESCAPE:
@@ -1305,11 +1688,13 @@ class Game:
                 self.keys_pressed.discard(event.key)
     
     def check_enemy_interaction(self):
-        """Check if player is touching an enemy to start combat."""
+        """Check if player is near an enemy to start combat (SPACE to engage)."""
         for enemy in self.enemies:
-            if enemy.alive and check_entity_collision(self.player, enemy):
-                self.start_combat(enemy)
-                break
+            if enemy.alive:
+                dist = math.hypot(self.player.x - enemy.x, self.player.y - enemy.y)
+                if dist < 48:  # Interaction range (1.5 tiles)
+                    self.start_combat(enemy)
+                    break
     
     def start_combat(self, enemy: Enemy):
         """Start combat with an enemy."""
@@ -1328,6 +1713,7 @@ class Game:
         self.combat.typewriter_timer = 0
         
         self.player.screen_shake = 300
+        self.particles.add_explosion(enemy.x, enemy.y, enemy.color, 20)
     
     def resolve_combat_answer(self):
         """Resolve the player's answer."""
@@ -1344,15 +1730,18 @@ class Game:
         if correct:
             self.combat.damage_dealt = self.player.atk + random.randint(-3, 3)
             self.combat.enemy.hp -= self.combat.damage_dealt
-            self.player.accuracy['correct'] += 1
             self.combat.enemy.damage_flash = 200
-            self.particles.add_explosion(self.combat.enemy.x, self.combat.enemy.y, GREEN, 8)
+            self.particles.add_explosion(self.combat.enemy.x, self.combat.enemy.y, GREEN, 12)
+            self.particles.add_damage_number(self.combat.enemy.x, self.combat.enemy.y,
+                                           self.combat.damage_dealt, GREEN)
         else:
             self.combat.damage_taken = max(1, self.combat.enemy.atk - self.player.def_ // 2)
             self.player.hp -= self.combat.damage_taken
             self.player.damage_flash = 200
             self.player.screen_shake = 200
-            self.particles.add_explosion(self.player.x, self.player.y, RED, 8)
+            self.particles.add_explosion(self.player.x, self.player.y, RED, 12)
+            self.particles.add_damage_number(self.player.x, self.player.y,
+                                           self.combat.damage_taken, RED)
         
         # Check if enemy defeated
         if self.combat.enemy.hp <= 0:
@@ -1371,7 +1760,7 @@ class Game:
                 self.player.atk += 3
                 self.player.def_ += 2
                 self.player.heal_flash = 300
-                self.particles.add_explosion(self.player.x, self.player.y, YELLOW, 12)
+                self.particles.add_heal_effect(self.player.x, self.player.y)
             
             # Check victory
             if all(not e.alive for e in self.enemies):
@@ -1502,11 +1891,24 @@ class Game:
             self.player.vy *= 0.7071
         
         # Apply movement
-        self.player.x += self.player.vx * dt / 1000
-        self.player.y += self.player.vy * dt / 1000
+        new_x = self.player.x + self.player.vx * dt / 1000
+        new_y = self.player.y + self.player.vy * dt / 1000
         
-        # Collision with world
-        resolve_collision(self.player, WORLD_MAP)
+        # Check collision with world
+        old_x, old_y = self.player.x, self.player.y
+        self.player.x = new_x
+        if check_collision(self.player, WORLD_MAP):
+            self.player.x = old_x
+        self.player.y = new_y
+        if check_collision(self.player, WORLD_MAP):
+            self.player.y = old_y
+        
+        # Check collision with enemies (solid - can't walk through)
+        for enemy in self.enemies:
+            if enemy.alive:
+                if check_entity_collision(self.player, enemy):
+                    # Push player back
+                    resolve_entity_collision(self.player, enemy)
         
         # Clamp to world bounds
         half_w = self.player.width / 2
@@ -1574,9 +1976,16 @@ class Game:
             dist = math.hypot(dx, dy)
             if dist > 10:
                 speed = 40
-                enemy.x += (dx / dist) * speed * dt / 1000
-                enemy.y += (dy / dist) * speed * dt / 1000
-                resolve_collision(enemy, WORLD_MAP)
+                new_x = enemy.x + (dx / dist) * speed * dt / 1000
+                new_y = enemy.y + (dy / dist) * speed * dt / 1000
+                
+                old_x, old_y = enemy.x, enemy.y
+                enemy.x = new_x
+                if check_collision(enemy, WORLD_MAP):
+                    enemy.x = old_x
+                enemy.y = new_y
+                if check_collision(enemy, WORLD_MAP):
+                    enemy.y = old_y
             else:
                 enemy.wander_target = (0, 0)
     
@@ -1635,6 +2044,7 @@ class Game:
             
             # Draw HUD (only in overworld)
             if self.state == GameState.OVERWORLD:
+                self.renderer.enemies = self.enemies  # For minimap
                 self.renderer.draw_hud(self.player)
             
             # Draw combat overlay
@@ -1652,6 +2062,7 @@ class Game:
                 if enemy.alive:
                     self.renderer.draw_enemy(enemy, self.camera_x, self.camera_y)
             self.renderer.draw_player(self.player, self.camera_x, self.camera_y)
+            self.renderer.enemies = self.enemies
             self.renderer.draw_hud(self.player)
             # Draw dialogue on top
             self.renderer.draw_dialogue_box(self.dialogue_text, self.dialogue_speaker)
@@ -1661,6 +2072,9 @@ class Game:
         
         elif self.state == GameState.VICTORY:
             self.renderer.draw_victory(self.player)
+        
+        # Apply post-processing effects
+        self.renderer.apply_post_effects()
         
         pygame.display.flip()
     
@@ -1683,7 +2097,7 @@ class Game:
 def main():
     print("Starting AppSec RPG: Guardians of the Code")
     print("OWASP Top 10 Quiz Combat Game")
-    print("Built with Pygame")
+    print("Built with Pygame - Retro Pixel Art Edition")
     print()
     game = Game()
     game.run()
