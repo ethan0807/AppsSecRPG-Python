@@ -10,12 +10,23 @@ import sys
 import os
 import math
 import random
-from typing import List, Tuple, Dict, Any, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
-# Initialize Pygame
-pygame.init()
+
+def shuffle_choices(question: Dict) -> Tuple[List[str], int]:
+    """Shuffle choices and return new choices list with correct answer index."""
+    choices = question['choices'][:]
+    correct_answer = choices[question['answer']]
+    indices = list(range(len(choices)))
+    random.shuffle(indices)
+    shuffled_choices = [choices[i] for i in indices]
+    new_answer_idx = indices.index(question['answer'])
+    return shuffled_choices, new_answer_idx
+
+
+# =============================================================================
 pygame.font.init()
 
 # =============================================================================
@@ -260,6 +271,12 @@ QUESTIONS = {
         {'question': 'Which prevents LDAP Injection?', 'choices': ['Input validation and escaping LDAP metacharacters', 'Using parameterized LDAP queries', 'Disabling LDAP entirely', 'Both A and B'], 'answer': 3},
         {'question': 'What is Command Injection?', 'choices': ['Executing arbitrary OS commands via user input', 'Injecting SQL commands', 'Injecting JavaScript', 'Buffer overflow attacks'], 'answer': 0},
         {'question': 'How to prevent Command Injection?', 'choices': ['Avoid shell commands, use safe APIs, validate input', 'Escape all shell metacharacters', 'Disable shell access', 'Use only built-in commands'], 'answer': 0},
+        {'question': 'What is Second-Order SQL Injection?', 'choices': ['Malicious input stored, executed later in different context', 'Two SQL injections chained', 'Injection in backup queries', 'Double encoding attack'], 'answer': 0},
+        {'question': 'What is ORM Injection?', 'choices': ['Injecting via object-relational mapping frameworks', 'Injecting into object models', 'SQL injection in ORM', 'Both A and C'], 'answer': 0},
+        {'question': 'What is Template Injection (SSTI)?', 'choices': ['Injecting template expressions to execute code', 'Injecting SQL into templates', 'XSS in template engines', 'CSS injection'], 'answer': 0},
+        {'question': 'What is XPath Injection?', 'choices': ['Injecting malicious XPath queries', 'Injecting SQL via XML', 'XSS via XML', 'XML parsing errors'], 'answer': 0},
+        {'question': 'What is Header Injection?', 'choices': ['Injecting malicious headers (CRLF injection)', 'HTTP header manipulation', 'Cookie injection', 'Host header attack'], 'answer': 0},
+        {'question': 'What is HQL Injection?', 'choices': ['Hibernate Query Language injection', 'HTML Query Language injection', 'Hypertext Query injection', 'Host Query injection'], 'answer': 0},
     ],
     'Cross-Site Scripting': [
         {'question': 'What is Cross-Site Scripting (XSS)?', 'choices': ['Injecting malicious scripts into trusted websites', 'Stealing database credentials', 'Bypassing authentication', 'Denial of service attacks'], 'answer': 0},
@@ -331,18 +348,29 @@ QUESTIONS = {
         {'question': 'How to prevent Mass Assignment?', 'choices': ['Explicit allowlists for bindable properties', 'Disable all updates', 'Use only GET requests', 'Encrypt request body'], 'answer': 0},
         {'question': 'What is API rate limiting?', 'choices': ['Restricting requests per client per time window', 'Limiting API versions', 'Limiting response size', 'Limiting endpoints'], 'answer': 0},
         {'question': 'What is GraphQL query depth limiting?', 'choices': ['Preventing deeply nested queries causing DoS', 'Limiting GraphQL versions', 'Limiting query results', 'Limiting mutations'], 'answer': 0},
+        {'question': 'What is API security testing?', 'choices': ['Testing API endpoints for vulnerabilities', 'Testing API performance', 'Testing API documentation', 'Testing API versions'], 'answer': 0},
+        {'question': 'What is API gateway security?', 'choices': ['Centralized auth, rate limiting, validation', 'Load balancing only', 'Caching only', 'Monitoring only'], 'answer': 0},
+        {'question': 'What is CORS misconfiguration?', 'choices': ['Allowing arbitrary origins with credentials', 'Allowing specific origins', 'Blocking all origins', 'Using same-origin policy'], 'answer': 0},
+        {'question': 'What is API versioning security?', 'choices': ['Deprecating old versions securely', 'Using only v1', 'No versioning', 'All versions public'], 'answer': 0},
     ],
     'Supply Chain Security': [
         {'question': 'What is a supply chain attack?', 'choices': ['Compromising software via third-party dependencies', 'Attacking physical supply chain', 'Attacking CI/CD pipeline only', 'Vendor phishing'], 'answer': 0},
         {'question': 'What is dependency confusion?', 'choices': ['Public package overrides private with same name', 'Confusing dependency versions', 'Circular dependencies', 'Missing dependencies'], 'answer': 0},
         {'question': 'How to prevent dependency confusion?', 'choices': ['Use scoped packages, pin versions, private registries', 'Avoid all public packages', 'Use only local packages', 'Disable package managers'], 'answer': 0},
         {'question': 'What is SLSA (Supply Chain Levels for Software Artifacts)?', 'choices': ['Framework for supply chain integrity', 'Software license agreement', 'Security logging standard', 'Static analysis tool'], 'answer': 0},
+        {'question': 'What is a provenance attestation?', 'choices': ['Verified build metadata', 'Source code license', 'Vulnerability scan result', 'Dependency list'], 'answer': 0},
+        {'question': 'What is sigstore?', 'choices': ['Keyless signing for software artifacts', 'Secret storage', 'Certificate authority', 'Package registry'], 'answer': 0},
+        {'question': 'What is Software Supply Chain Integrity?', 'choices': ['Ensuring artifacts untampered from build to deploy', 'Fast CI/CD pipelines', 'Automated testing', 'Code review'], 'answer': 0},
     ],
     'Cloud & Container Security': [
         {'question': 'What is container escape?', 'choices': ['Breaking out of container to host', 'Escaping Kubernetes cluster', 'Escaping VPC', 'Escaping subnet'], 'answer': 0},
         {'question': 'What is the principle of least privilege in Kubernetes?', 'choices': ['Pods get minimum required permissions', 'All pods run as root', 'No RBAC', 'Host network for all pods'], 'answer': 0},
         {'question': 'What is a misconfigured S3 bucket?', 'choices': ['Publicly accessible bucket with sensitive data', 'Encrypted bucket', 'Bucket with versioning', 'Bucket in wrong region'], 'answer': 0},
         {'question': 'What is IAM policy over-permission?', 'choices': ['Granting broader permissions than needed', 'No IAM policies', 'Too many IAM users', 'Expired credentials'], 'answer': 0},
+        {'question': 'What is Kubernetes RBAC?', 'choices': ['Role-based access control for cluster resources', 'Resource-based access control', 'Root-based access control', 'Remote-based access control'], 'answer': 0},
+        {'question': 'What is a Kubernetes admission controller?', 'choices': ['Validates/modifies requests before persistence', 'Controls pod admission to nodes', 'Manages ingress traffic', 'Handles authentication'], 'answer': 0},
+        {'question': 'What is cloud metadata service exposure?', 'choices': ['SSRF accessing instance metadata (IMDSv1)', 'Exposed cloud console', 'Public S3 bucket', 'Open security group'], 'answer': 0},
+        {'question': 'What is container image scanning?', 'choices': ['Scanning images for vulnerabilities before deploy', 'Scanning running containers', 'Scanning host OS', 'Scanning network traffic'], 'answer': 0},
     ],
 }
 
@@ -489,6 +517,7 @@ class CombatState:
     enemy: Optional[Enemy] = None
     question: Optional[Dict] = None
     choices: List[str] = field(default_factory=list)
+    correct_answer_idx: int = 0
     selected: int = 0
     timer: float = 30.0
     max_timer: float = 30.0
@@ -1915,7 +1944,7 @@ class Game:
         self.combat = CombatState()
         self.combat.enemy = enemy
         self.combat.question = get_question_for_enemy(enemy)
-        self.combat.choices = self.combat.question['choices'][:]
+        self.combat.choices, self.combat.correct_answer_idx = shuffle_choices(self.combat.question)
         self.combat.selected = 0
         self.combat.timer = 30.0
         self.combat.waiting_for_answer = True
@@ -1938,7 +1967,7 @@ class Game:
         self.session_stats['questions'] += 1
         
         q = self.combat.question
-        correct = (self.combat.selected == q['answer'])
+        correct = (self.combat.selected == self.combat.correct_answer_idx)
         
         if correct:
             self.combat.result = 'correct'
@@ -2027,7 +2056,7 @@ class Game:
                     self.combat.result = None
                     self.combat.timer = 30.0
                     self.combat.question = get_question_for_enemy(self.combat.enemy)
-                    self.combat.choices = self.combat.question['choices'][:]
+                    self.combat.choices, self.combat.correct_answer_idx = shuffle_choices(self.combat.question)
                     self.combat.selected = 0
                 else:
                     self.state = GameState.OVERWORLD
