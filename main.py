@@ -1377,9 +1377,17 @@ class Renderer:
         self.screen.blit(self.scanlines, (0, 0))
         self.screen.blit(self.vignette, (0, 0))
         
-        # Title
+        # Retro border frame
+        frame_margin = 40
+        pygame.draw.rect(self.screen, UI_BORDER, (frame_margin, frame_margin, SCREEN_WIDTH - 2*frame_margin, SCREEN_HEIGHT - 2*frame_margin), 3)
+        pygame.draw.rect(self.screen, MENU_SELECTED_BORDER, (frame_margin + 3, frame_margin + 3, SCREEN_WIDTH - 2*frame_margin - 6, SCREEN_HEIGHT - 2*frame_margin - 6), 1)
+        
+        # Title with shadow effect
         title_text = self.font_title.render('APPSEC RPG', True, BRIGHT_AMBER)
         tx = (SCREEN_WIDTH - title_text.get_width()) // 2
+        # Shadow
+        shadow = self.font_title.render('APPSEC RPG', True, DARK_AMBER)
+        self.screen.blit(shadow, (tx + 2, 122))
         self.screen.blit(title_text, (tx, 120))
         
         subtitle = self.font_large.render('Guardians of the Code', True, AMBER)
@@ -1391,28 +1399,84 @@ class Renderer:
         vx = (SCREEN_WIDTH - ver.get_width()) // 2
         self.screen.blit(ver, (vx, 210))
         
-        # Decorative elements
-        for i in range(5):
-            y = 260 + i * 60
-            pygame.draw.line(self.screen, VERY_DARK_AMBER, (100, y), (SCREEN_WIDTH-100, y), 1)
+        # Retro decorative elements - corner brackets
+        bracket_size = 20
+        corners = [
+            (frame_margin + 10, frame_margin + 10),
+            (SCREEN_WIDTH - frame_margin - 10 - bracket_size, frame_margin + 10),
+            (frame_margin + 10, SCREEN_HEIGHT - frame_margin - 10 - bracket_size),
+            (SCREEN_WIDTH - frame_margin - 10 - bracket_size, SCREEN_HEIGHT - frame_margin - 10 - bracket_size),
+        ]
+        for cx, cy in corners:
+            pygame.draw.line(self.screen, BRIGHT_AMBER, (cx, cy), (cx + bracket_size, cy), 2)
+            pygame.draw.line(self.screen, BRIGHT_AMBER, (cx, cy), (cx, cy + bracket_size), 2)
+            pygame.draw.line(self.screen, BRIGHT_AMBER, (cx + bracket_size, cy + bracket_size), (cx, cy + bracket_size), 2)
+            pygame.draw.line(self.screen, BRIGHT_AMBER, (cx + bracket_size, cy + bracket_size), (cx + bracket_size, cy), 2)
         
-        # Start prompt
+        # Enemy showcase - small sprites with names
+        showcase_y = 280
+        showcase_x_start = SCREEN_WIDTH // 2 - 300
+        enemy_showcase = [
+            ('injection', 'Injection', RED),
+            ('xss', 'XSS', BRIGHT_RED),
+            ('crypto', 'Crypto', CYAN),
+            ('access', 'Access', ORANGE),
+            ('ssrf', 'SSRF', MAGENTA),
+        ]
+        for i, (sprite_name, label, color) in enumerate(enemy_showcase):
+            x = showcase_x_start + i * 150
+            if sprite_name in self.enemy_sprites:
+                sprite = self.enemy_sprites[sprite_name]
+                # Scale up for showcase
+                scaled = pygame.transform.scale(sprite, (48, 48))
+                self.screen.blit(scaled, (x, showcase_y))
+                # Label
+                l_text = self.font_small.render(label, True, color)
+                lx = x + 24 - l_text.get_width() // 2
+                self.screen.blit(l_text, (lx, showcase_y + 55))
+        
+        # Divider line
+        pygame.draw.line(self.screen, VERY_DARK_AMBER, (frame_margin + 40, 380), (SCREEN_WIDTH - frame_margin - 40, 380), 1)
+        
+        # Start prompt with blinking
         start_text = self.font_medium.render('PRESS ENTER TO BEGIN', True, BRIGHT_AMBER)
         stx = (SCREEN_WIDTH - start_text.get_width()) // 2
         if int(pygame.time.get_ticks() / 500) % 2 == 0:
-            self.screen.blit(start_text, (stx, 500))
+            # Blinking arrow
+            arrow = self.font_medium.render('►', True, BRIGHT_AMBER)
+            self.screen.blit(arrow, (stx - 30, 420))
+            self.screen.blit(start_text, (stx, 420))
+            arrow2 = self.font_medium.render('◄', True, BRIGHT_AMBER)
+            self.screen.blit(arrow2, (stx + start_text.get_width() + 10, 420))
         
-        # Controls hint
+        # Controls hint in retro box
+        box_y = 480
+        box_h = 180
+        box_w = 600
+        box_x = (SCREEN_WIDTH - box_w) // 2
+        pygame.draw.rect(self.screen, UI_BG, (box_x, box_y, box_w, box_h), border_radius=4)
+        pygame.draw.rect(self.screen, UI_BORDER, (box_x, box_y, box_w, box_h), 2, border_radius=4)
+        
+        controls_title = self.font_medium.render('CONTROLS', True, BRIGHT_AMBER)
+        ctx = box_x + (box_w - controls_title.get_width()) // 2
+        self.screen.blit(controls_title, (ctx, box_y + 10))
+        
         controls = [
-            'WASD / Arrows - Move',
-            'SPACE / ENTER - Interact / Attack',
-            'ESC - Pause',
-            'Arrows in Combat - Select Answer'
+            'WASD / Arrows        - Move',
+            'SPACE / ENTER   - Interact / Attack',
+            'ESC                       - Pause Menu',
+            'UP/DOWN Arrows  - Select Answer',
+            '1-4 Keys              - Quick Answer',
         ]
         for i, ctrl in enumerate(controls):
             c_text = self.font_small.render(ctrl, True, UI_TEXT)
-            cx = (SCREEN_WIDTH - c_text.get_width()) // 2
-            self.screen.blit(c_text, (cx, 550 + i * 22))
+            cx = box_x + 30
+            self.screen.blit(c_text, (cx, box_y + 45 + i * 24))
+        
+        # Bottom credits
+        credits = self.font_small.render('OWASP Top 10 + Supply Chain, API, Cloud, Crypto, Mobile, DevSecOps, Privacy', True, DARK_AMBER)
+        cdx = (SCREEN_WIDTH - credits.get_width()) // 2
+        self.screen.blit(credits, (cdx, 700))
     
     def draw_pause(self, selected: int):
         # Semi-transparent overlay
@@ -1565,7 +1629,7 @@ class Game:
         
         # Input
         self.keys_pressed = set()
-        self.last_interact = 0
+        self.last_interact = pygame.time.get_ticks() - 500  # Allow immediate interaction
         
         # Stats
         self.session_stats = {'enemies': 0, 'questions': 0, 'correct': 0}
@@ -1580,6 +1644,7 @@ class Game:
         question_tracker.reset()
         self.session_stats = {'enemies': 0, 'questions': 0, 'correct': 0}
         self.state = GameState.OVERWORLD
+        self.last_interact = pygame.time.get_ticks() - 500  # Allow immediate interaction
         self.show_intro()
     
     def show_intro(self):
