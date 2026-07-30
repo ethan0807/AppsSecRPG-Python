@@ -1570,18 +1570,21 @@ class Renderer:
         controls_title = self.font_medium.render('CONTROLS', True, BRIGHT_AMBER)
         ctx = box_x + (box_w - controls_title.get_width()) // 2
         self.screen.blit(controls_title, (ctx, box_y + 10))
-        
+
         controls = [
-            'WASD / Arrows        - Move',
-            'SPACE / ENTER   - Interact / Attack',
-            'ESC                       - Pause Menu',
-            'UP/DOWN Arrows  - Select Answer',
-            '1-4 Keys              - Quick Answer',
+            ('WASD / Arrows', 'Move'),
+            ('SPACE / ENTER', 'Interact / Attack'),
+            ('ESC', 'Pause Menu'),
+            ('UP/DOWN Arrows', 'Select Answer'),
+            ('1-4 Keys', 'Quick Answer'),
         ]
-        for i, ctrl in enumerate(controls):
-            c_text = self.font_small.render(ctrl, True, UI_TEXT)
-            cx = box_x + 30
-            self.screen.blit(c_text, (cx, box_y + 45 + i * 24))
+        key_x = box_x + 30
+        desc_x = box_x + 220
+        for i, (key, desc) in enumerate(controls):
+            key_text = self.font_small.render(key, True, BRIGHT_AMBER)
+            desc_text = self.font_small.render(desc, True, UI_TEXT)
+            self.screen.blit(key_text, (key_x, box_y + 45 + i * 24))
+            self.screen.blit(desc_text, (desc_x, box_y + 45 + i * 24))
         
         # Bottom credits
         credits = self.font_small.render('OWASP Top 10 + Supply Chain, API, Cloud, Crypto, Mobile, DevSecOps, Privacy', True, DARK_AMBER)
