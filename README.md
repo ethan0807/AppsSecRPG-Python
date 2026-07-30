@@ -1,6 +1,6 @@
 # AppSec RPG: Guardians of the Code
 
-An educational single-player top-down RPG where combat encounters are resolved through OWASP Top 10 security quizzes. Built with Python and Pygame.
+An educational single-player top-down RPG where combat encounters are resolved through application security quizzes. Built with Python and Pygame.
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![Pygame](https://img.shields.io/badge/pygame-2.5+-green.svg)
